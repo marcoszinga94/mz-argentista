@@ -24,25 +24,25 @@ fetchDollarPrices();
 
 <header class="sticky top-0 bg-blue-600 text-white shadow-lg z-10">
   <nav class="max-w-6xl mx-auto">
-    <div class="flex flex-col sm:flex-row items-center justify-between p-4">
-      <div class="mb-4 sm:mb-0">
+    <div class="flex flex-col sm:flex-row items-center justify-between p-3 sm:p-4">
+      <div class="mb-3 sm:mb-0">
         <a href="/">
           <p
-            class="text-2xl font-extrabold hover:text-blue-100 transition-colors"
+            class="text-xl sm:text-2xl font-extrabold hover:text-blue-100 transition-colors"
           >
             ARGENTISTA
           </p>
         </a>
       </div>
       <div>
-        <ul class="flex gap-2 sm:gap-4">
+        <ul class="flex gap-1 sm:gap-4">
           {
             navItems.map((item) => (
               <li>
                 <a
                   href={item.href}
                   class={`
-                    px-4 py-2 rounded-lg font-medium
+                    px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-medium text-sm sm:text-base
                     transition-all duration-200
                     hover:bg-blue-500 hover:shadow-md
                     ${
@@ -62,17 +62,17 @@ fetchDollarPrices();
     </div>
   </nav>
   <div
-    class="relative overflow-hidden text-sm text-white bg-blue-400 h-8 flex items-center"
+    class="relative overflow-hidden text-xs sm:text-sm text-white h-8 sm:h-8 flex items-center"
   >
     <div
       id="ticker"
-      class="absolute whitespace-nowrap flex gap-8 px-8 animate-marquee"
+      class="absolute whitespace-nowrap flex gap-4 sm:gap-8 px-4 sm:px-8 animate-marquee text-xs"
     >
       {
         (await fetchDollarPrices()).map((item) => (
-          <span class="inline-flex items-center gap-2">
-            <strong>{item.nombre}</strong>
-            <span>
+          <span class="inline-flex items-center gap-1 sm:gap-2">
+            <strong class="text-[10px] sm:text-xs">{item.nombre}</strong>
+            <span class="text-[10px] sm:text-xs">
               ${item.compra?.toFixed(2) ?? "N/A"} / $
               {item.venta?.toFixed(2) ?? "N/A"}
             </span>
@@ -81,9 +81,9 @@ fetchDollarPrices();
       }
       {
         (await fetchDollarPrices()).map((item) => (
-          <span class="inline-flex items-center gap-2">
-            <strong>{item.nombre}</strong>
-            <span>
+          <span class="inline-flex items-center gap-1 sm:gap-2">
+            <strong class="text-[10px] sm:text-xs">{item.nombre}</strong>
+            <span class="text-[10px] sm:text-xs">
               ${item.compra?.toFixed(2) ?? "N/A"} / $
               {item.venta?.toFixed(2) ?? "N/A"}
             </span>

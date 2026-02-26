@@ -12,22 +12,14 @@ declare global {
 
 <Layout title="ARGENTISTA">
   <section
-    class="flex flex-col items-center justify-center gap-8 m-auto max-w-5xl px-4"
+    class="flex flex-col items-center justify-center gap-4 sm:gap-6 m-auto max-w-5xl w-full px-3 sm:px-4"
   >
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-center text-blue-600 tracking-tight">
+      ARGENTISTA
+    </h1>
+    
     <div
-      class="flex flex-col items-center justify-center m-auto max-w-5xl px-4"
-    >
-      <p class="text-center text-lg leading-relaxed">
-        Descubre el estado de la economía argentina minuto a minuto.
-      </p>
-      <p class="text-center text-lg leading-relaxed">
-        Con ARGENTISTA, accede a datos actuales y comprende el impacto de la
-        inflación de manera clara y sencilla.
-      </p>
-    </div>
-
-    <div
-      class="flex flex-col items-center justify-center gap-8 m-auto max-w-5xl"
+      class="flex flex-col items-center justify-center gap-4 w-full"
     >
       <div class="flex flex-col gap-4 w-full md:flex-row h-auto">
         <InflationCalculator client:load />
@@ -35,7 +27,7 @@ declare global {
       </div>
     </div>
 
-    <p class="text-center text-gray-500 text-sm">
+    <p class="text-center text-gray-500 text-xs sm:text-sm px-2">
       Esta aplicación utiliza la API de <a
         class="text-blue-500 underline"
         href="https://argentinadatos.com/"

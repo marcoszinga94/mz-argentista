@@ -247,11 +247,12 @@ const DollarHistoryChart = () => {
   };
 
   const prepareChartData = (data) => {
-    if (!data[0] || data[0].length === 0) {
+    const validData = data.filter(d => d && d.length > 0);
+    if (validData.length === 0) {
       return { labels: [], datasets: [] };
     }
 
-    const allDates = [...new Set(data.flat().map((item) => item.date))].sort(
+    const allDates = [...new Set(validData.flat().map((item) => item.date))].sort(
       (a, b) => new Date(a) - new Date(b)
     );
 
@@ -313,19 +314,19 @@ const DollarHistoryChart = () => {
   ];
 
   const selectStyles =
-    "w-full sm:w-auto p-2.5 pr-8 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-sm sm:text-base";
+    "w-full sm:w-auto p-2 sm:p-2.5 pr-8 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
 
   return (
-    <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full m-auto transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-      <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h2 className="text-2xl sm:text-3xl font-black text-blue-600 tracking-tight">
+    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full max-w-5xl mx-auto transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h2 className="text-lg sm:text-xl md:text-2xl font-black text-blue-600 tracking-tight">
           Histórico del Dólar
         </h2>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <label
             htmlFor="time-range-select"
-            className="text-sm font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
+            className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap"
           >
             Rango:
           </label>
@@ -350,18 +351,18 @@ const DollarHistoryChart = () => {
         </div>
       </div>
 
-      <div className="h-72 sm:h-96 relative w-full">
+      <div className="h-64 sm:h-80 md:h-96 lg:h-[28rem] relative w-full">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-2xl">
-            <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="text-sm font-medium text-gray-500">Cargando datos...</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
+            <div className="flex flex-col items-center gap-2 sm:gap-3">
+              <div className="animate-spin rounded-full h-6 sm:h-8 w-6 sm:w-8 border-b-2 border-blue-600"></div>
+              <span className="text-xs sm:text-sm font-medium text-gray-500">Cargando...</span>
             </div>
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-2xl">
-            <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
+            <div className="p-3 sm:p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg sm:rounded-xl text-center text-xs sm:text-sm">
               <span className="font-medium">Error: {error}</span>
             </div>
           </div>

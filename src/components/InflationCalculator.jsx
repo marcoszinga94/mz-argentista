@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 const InflationCalculator = () => {
   const [inflationData, setInflationData] = useState([]);
@@ -50,13 +50,7 @@ const InflationCalculator = () => {
     }
   }, [inflationData]);
 
-  useEffect(() => {
-    if (amount && startMonth && startYear && endMonth && endYear) {
-      calculateInflation();
-    }
-  }, [amount, startMonth, startYear, endMonth, endYear]);
-
-  const calculateInflation = () => {
+  const calculateInflation = useCallback(() => {
     if (!amount || !startMonth || !startYear || !endMonth || !endYear) {
       return;
     }
@@ -94,7 +88,13 @@ const InflationCalculator = () => {
       averageMonthlyInflation: averageMonthlyInflation.toFixed(2),
       annualizedInflation: (annualizedInflation * 100).toFixed(2),
     });
-  };
+  }, [amount, startMonth, startYear, endMonth, endYear, inflationData]);
+
+  useEffect(() => {
+    if (amount && startMonth && startYear && endMonth && endYear) {
+      calculateInflation();
+    }
+  }, [calculateInflation]);
 
   const months = [
     { value: "01", label: "Enero" },
@@ -132,46 +132,46 @@ const InflationCalculator = () => {
   }
 
   const inputStyles =
-    "w-full p-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 text-right";
+    "w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 text-right text-sm sm:text-lg";
   const selectStyles =
-    "w-full p-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100";
+    "w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
   const labelStyles =
-    "text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2 block";
+    "text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2 block";
 
   return (
-    <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full m-auto h-full">
-      <h2 className="text-3xl font-black mb-8 text-center text-blue-600 tracking-tight">
+    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full m-auto h-full overflow-hidden">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-4 sm:mb-6 text-center text-blue-600 tracking-tight">
         Calculadora de Inflación
       </h2>
 
-      <div className="flex flex-col gap-8">
-        <div className="bg-gray-50/50 p-6 rounded-2xl border border-gray-100 hover:border-blue-100 transition-colors">
-          <div className="grid grid-rows-2 gap-4 items-start text-center">
-            <div className="flex flex-col m-auto gap-4">
+      <div className="flex flex-col gap-4 sm:gap-6">
+        <div className="bg-gray-50/50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-blue-100 transition-colors">
+          <div className="flex flex-col gap-3 items-start text-center">
+            <div className="w-full">
               <label className={labelStyles}>Monto Inicial</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-semibold">
+                <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-xs sm:text-sm">
                   $
                 </span>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className={`${inputStyles} pl-8 text-lg`}
+                  className={`${inputStyles} pl-6 sm:pl-7`}
                   min="0"
                   placeholder="0.00"
                 />
               </div>
             </div>
-            <div className="flex flex-row m-auto gap-4">
-              <div className="md:col-span-4">
+            <div className="flex flex-row w-full gap-1.5 sm:gap-3">
+              <div className="flex-1">
                 <label className={labelStyles}>Mes Inicio</label>
                 <select
                   value={startMonth}
                   onChange={(e) => setStartMonth(e.target.value)}
                   className={selectStyles}
                 >
-                  <option value="">Seleccionar Mes</option>
+                  <option value="">Mes</option>
                   {months.map((month) => (
                     <option key={month.value} value={month.value}>
                       {month.label}
@@ -179,14 +179,14 @@ const InflationCalculator = () => {
                   ))}
                 </select>
               </div>
-              <div className="md:col-span-4">
+              <div className="flex-1">
                 <label className={labelStyles}>Año Inicio</label>
                 <select
                   value={startYear}
                   onChange={(e) => setStartYear(e.target.value)}
                   className={selectStyles}
                 >
-                  <option value="">Seleccionar Año</option>
+                  <option value="">Año</option>
                   {years.map((year) => (
                     <option key={year} value={year}>
                       {year}
@@ -198,15 +198,15 @@ const InflationCalculator = () => {
           </div>
         </div>
 
-        <div className="flex items-center justify-center -my-10 z-10">
-          <div className="bg-white p-2 rounded-full shadow-md border border-gray-100 text-gray-400">
+        <div className="flex items-center justify-center -my-6 sm:-my-10">
+          <div className="bg-white p-2 rounded-full shadow-md border border-gray-100 text-gray-400 relative z-0">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
               strokeWidth={2}
               stroke="currentColor"
-              className="w-6 h-6"
+              className="w-5 h-5 sm:w-6 sm:h-6"
             >
               <path
                 strokeLinecap="round"
@@ -218,27 +218,27 @@ const InflationCalculator = () => {
         </div>
 
         {/* Result Section */}
-        <div className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
-          <div className="grid grid-row-2 gap-4 items-start text-center">
-            <div className="flex flex-col m-auto gap-4">
-              <label className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-2 block">
+        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-blue-100">
+          <div className="flex flex-col gap-3 items-start text-center">
+            <div className="w-full">
+              <label className="text-[10px] sm:text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1 sm:mb-2 block">
                 Monto Final
               </label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-400 font-semibold">
+                <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-blue-400 font-semibold text-xs sm:text-sm">
                   $
                 </span>
                 <input
                   type="text"
                   value={result ? result.adjustedAmount : ""}
                   readOnly
-                  className={`${inputStyles} pl-8 text-lg bg-white border-blue-200 text-blue-900 font-bold`}
+                  className={`${inputStyles} pl-6 sm:pl-7 bg-white border-blue-200 text-blue-900 font-bold`}
                   placeholder="0.00"
                 />
               </div>
             </div>
-            <div className="flex flex-row m-auto gap-4">
-              <div className="md:col-span-4">
+            <div className="flex flex-row w-full gap-1.5 sm:gap-3">
+              <div className="flex-1">
                 <label className={labelStyles}>Mes Final</label>
                 <select
                   value={endMonth}
@@ -253,7 +253,7 @@ const InflationCalculator = () => {
                 </select>
               </div>
 
-              <div className="md:col-span-4">
+              <div className="flex-1">
                 <label className={labelStyles}>Año Final</label>
                 <select
                   value={endYear}
@@ -271,23 +271,23 @@ const InflationCalculator = () => {
           </div>
 
           {result && (
-            <div className="mt-6 pt-6 border-t border-blue-200/50">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center align-center">
-                <div className="bg-white/60 p-4 rounded-xl backdrop-blur-sm">
-                  <p className="text-sm text-gray-500 mb-1">Inflación Total</p>
-                  <p className="text-xl font-bold text-blue-600">
+            <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-blue-200/50">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 text-center">
+                <div className="bg-white/60 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                  <p className="text-[9px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Total</p>
+                  <p className="text-sm sm:text-lg font-bold text-blue-600">
                     {result.totalInflation}%
                   </p>
                 </div>
-                <div className="bg-white/60 p-4 rounded-xl backdrop-blur-sm">
-                  <p className="text-sm text-gray-500 mb-1">Promedio Mensual</p>
-                  <p className="text-xl font-bold text-blue-600">
+                <div className="bg-white/60 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                  <p className="text-[9px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Promedio</p>
+                  <p className="text-sm sm:text-lg font-bold text-blue-600">
                     {result.averageMonthlyInflation}%
                   </p>
                 </div>
-                <div className="bg-white/60 p-4 rounded-xl backdrop-blur-sm">
-                  <p className="text-sm text-gray-500 mb-1">Anualizado</p>
-                  <p className="text-xl font-bold text-blue-600">
+                <div className="bg-white/60 p-2 sm:p-3 rounded-lg sm:rounded-xl backdrop-blur-sm">
+                  <p className="text-[9px] sm:text-xs text-gray-500 mb-0.5 sm:mb-1">Anual</p>
+                  <p className="text-sm sm:text-lg font-bold text-blue-600">
                     {result.annualizedInflation}%
                   </p>
                 </div>

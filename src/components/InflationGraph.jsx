@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -59,13 +59,7 @@ const InflationGraph = () => {
     }
   }, [inflationData]);
 
-  useEffect(() => {
-    if (startDate && endDate) {
-      updateChart();
-    }
-  }, [startDate, endDate]);
-
-  const updateChart = () => {
+  const updateChart = useCallback(() => {
     const filteredData = inflationData.filter(
       (item) => item.fecha >= startDate && item.fecha <= endDate
     );
@@ -88,7 +82,13 @@ const InflationGraph = () => {
         },
       ],
     });
-  };
+  }, [inflationData, startDate, endDate]);
+
+  useEffect(() => {
+    if (startDate && endDate) {
+      updateChart();
+    }
+  }, [startDate, endDate, updateChart]);
 
   const chartOptions = {
     responsive: true,
@@ -183,17 +183,17 @@ const InflationGraph = () => {
   };
 
   const inputStyles =
-    "w-full p-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700";
+    "w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 text-sm sm:text-base";
 
   return (
-    <section className="bg-white p-6 sm:p-8 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full mb-auto md:sticky md:top-32 flex-1">
-      <h2 className="text-3xl font-black mb-8 text-center text-blue-600 tracking-tight">
+    <section className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full mb-auto md:sticky md:top-32 flex-1">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-4 sm:mb-6 text-center text-blue-600 tracking-tight">
         Evolución de la Inflación
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="startDate" className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-            Fecha Inicial
+      <div className="grid grid-cols-2 gap-3 sm:gap-6 mb-4 sm:mb-8">
+        <div className="flex flex-col gap-1 sm:gap-2">
+          <label htmlFor="startDate" className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            Desde
           </label>
           <input
             type="date"
@@ -203,9 +203,9 @@ const InflationGraph = () => {
             className={inputStyles}
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="endDate" className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
-            Fecha Final
+        <div className="flex flex-col gap-1 sm:gap-2">
+          <label htmlFor="endDate" className="text-[10px] sm:text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            Hasta
           </label>
           <input
             type="date"
@@ -216,18 +216,18 @@ const InflationGraph = () => {
           />
         </div>
       </div>
-      <div className="h-96 relative w-full">
+      <div className="h-72 sm:h-80 md:h-[28rem] lg:h-[32rem] relative w-full">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-2xl">
-            <div className="flex flex-col items-center gap-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="text-sm font-medium text-gray-500">Cargando datos...</span>
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
+            <div className="flex flex-col items-center gap-2 sm:gap-3">
+              <div className="animate-spin rounded-full h-6 sm:h-8 w-6 sm:w-8 border-b-2 border-blue-600"></div>
+              <span className="text-xs sm:text-sm font-medium text-gray-500">Cargando...</span>
             </div>
           </div>
         )}
         {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-2xl">
-            <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
+            <div className="p-3 sm:p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg sm:rounded-xl text-center text-xs sm:text-sm">
               <span className="font-medium">Error: {error}</span>
             </div>
           </div>

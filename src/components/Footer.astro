@@ -2,41 +2,30 @@
 import GithubIcon from "../../public/Icons/GithubIcon.astro";
 
 const currentYear = new Date().getFullYear();
-
-const footerLinks = [
-  {
-    title: "Navegacion",
-    links: [
-      { href: "/", label: "Inicio" },
-      { href: "/dolar", label: "Dólar" },
-      { href: "/inflacion", label: "Inflación" },
-    ],
-  },
-];
 ---
 
 <footer class="bg-blue-600 text-white mt-auto">
-  <div class="max-w-6xl mx-auto py-8 px-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8">
+  <div class="max-w-6xl mx-auto py-6 sm:py-8 px-3 sm:px-4">
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-6 sm:gap-8 mb-6 sm:mb-8">
       <div class="text-center sm:text-left">
         <a href="/">
           <p
-            class="text-2xl font-extrabold hover:text-blue-100 transition-colors"
+            class="text-xl sm:text-2xl font-extrabold hover:text-blue-100 transition-colors mb-3 sm:mb-4"
           >
             ARGENTISTA
           </p>
         </a>
-        <p >
-          Esta aplicación utiliza la API de <a
+        <p class="text-xs sm:text-sm mb-2 sm:mb-3">
+          Datos de <a
             class="text-white underline"
             href="https://argentinadatos.com/"
             target="_blank"
             rel="noopener noreferrer">ArgentinaDatos</a
-          > para ofrecer información actualizada y confiable.
+          >
         </p>
         
-        <p>
-          Desarrollada por <a
+        <p class="text-xs sm:text-sm">
+          Por <a
             href="https://marcoszinga.vercel.app/"
             class="font-bold"
             target="_blank">Marcos Zingaretti</a
@@ -44,44 +33,22 @@ const footerLinks = [
         </p>
       </div>
 
-      {
-        footerLinks.map((section) => (
-          <div class="text-left md:text-center">
-            <h3 class="font-semibold mb-4 text-center">{section.title}</h3>
-            <ul class="space-y-2 flex flex-row gap-6 justify-center">
-              {section.links.map((link) => (
-                <li>
-                  <a
-                    href={link.href}
-                    class="text-blue-100 hover:text-white transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
+      <div class="flex gap-3 sm:gap-4">
+        <a
+          target="_blank"
+          href="https://github.com/marcoszinga94/Argentista-WebApp"
+          class="text-blue-100 hover:text-white transition-colors"
+          aria-label="GitHub"
+        >
+          <GithubIcon />
+        </a>
+      </div>
     </div>
 
-    <div class="border-t border-blue-500 pt-8">
-      <div class="flex flex-row sm:flex-row justify-between items-center">
-        <p class="text-sm text-blue-100 mb-4 sm:mb-0">
-          &copy; {currentYear} Argentista. Todos los derechos reservados.
-        </p>
-
-        <div class="flex gap-4">
-          <a
-            target="_blank"
-            href="https://github.com/marcoszinga94/Argentista-WebApp"
-            class="text-blue-100 hover:text-white transition-colors"
-            aria-label="GitHub"
-          >
-            <GithubIcon />
-          </a>
-        </div>
-      </div>
+    <div class="border-t border-blue-500 pt-4 sm:pt-6">
+      <p class="text-xs sm:text-sm text-blue-100 text-center">
+        &copy; {currentYear} Argentista.
+      </p>
     </div>
   </div>
 </footer>

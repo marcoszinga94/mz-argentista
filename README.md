@@ -9,7 +9,7 @@
 
 ## Características
 
-- **Resumen económico:** inflación mensual, inflación interanual, dólar oficial y blue con la brecha contra el oficial.
+- **Resumen económico:** inflación mensual e interanual, dólar oficial y blue con la brecha contra el oficial, riesgo país y UVA.
 - **Calculadora de inflación:** ajusta un monto entre dos meses con el índice mensual y muestra inflación total, mensual promedio y anualizada.
 - **Conversor de moneda:** convierte entre pesos y dólares con las cotizaciones vigentes, en ambos sentidos y con la tasa correcta según la dirección.
 - **Cotizaciones del dólar:** lista compra y venta de las casas disponibles en `dolarapi.com`.
@@ -84,8 +84,8 @@ consultas a las APIs públicas se hacen en el servidor, con caché en memoria y 
 ## Estado del proyecto
 
 Aplicación funcional con las tres vistas operativas, páginas de error, sitemap y PWA
-instalable. La lógica de cálculo y el parseo de montos están cubiertos por tests; los
-componentes de React todavía no tienen tests propios.
+instalable. La lógica de cálculo, el parseo de montos y las islas de React están cubiertos
+por tests.
 
 ## Licencia
 

@@ -1,8 +1,13 @@
 ---
-import type { DollarRate, InflationRecord } from "../lib/api";
+import type {
+  DollarRate,
+  IndicatorSnapshot,
+  InflationRecord,
+} from "../lib/api";
 import {
   accumulateInflation,
   formatAmount,
+  formatInteger,
   formatPercent,
   shiftMonth,
 } from "../lib/finance";
@@ -10,9 +15,11 @@ import {
 export interface Props {
   inflation: InflationRecord[];
   rates: DollarRate[];
+  countryRisk?: IndicatorSnapshot | null;
+  uva?: IndicatorSnapshot | null;
 }
 
-const { inflation, rates } = Astro.props;
+const { inflation, rates, countryRisk = null, uva = null } = Astro.props;
 
 const latest = inflation[inflation.length - 1];
 const lastMonth = latest
@@ -46,6 +53,27 @@ const updatedAt = (rate: DollarRate | null) =>
       })
     : null;
 
+const shortDate = (isoDate: string | undefined) =>
+  isoDate
+    ? new Date(`${isoDate}T00:00:00`).toLocaleDateString("es-AR", {
+        day: "2-digit",
+        month: "2-digit",
+      })
+    : null;
+
+const riskChange =
+  countryRisk && countryRisk.previousValue !== null
+    ? countryRisk.value - countryRisk.previousValue
+    : null;
+
+const riskCaption = countryRisk
+  ? `${riskChange === null ? "Sin variación diaria" : `Var. diaria ${riskChange > 0 ? "+" : ""}${formatInteger(riskChange)} pts`} · ${shortDate(countryRisk.date) ?? ""}`
+  : "Sin datos";
+
+const uvaCaption = uva
+  ? `Valor vigente · ${shortDate(uva.date) ?? ""}`
+  : "Sin datos";
+
 const cards = [
   {
     label: "Inflación mensual",
@@ -72,11 +100,21 @@ const cards = [
         ? "Sin datos"
         : `Brecha ${formatPercent(spread, 1)}% vs oficial`,
   },
+  {
+    label: "Riesgo país",
+    value: countryRisk ? formatInteger(countryRisk.value) : "—",
+    caption: riskCaption,
+  },
+  {
+    label: "UVA",
+    value: uva ? `$${formatAmount(uva.value)}` : "—",
+    caption: uvaCaption,
+  },
 ];
 ---
 
 <section
-  class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full"
+  class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 w-full"
   aria-label="Resumen económico"
 >
   {

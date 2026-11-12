@@ -36,9 +36,13 @@ const INFLATION_URL =
 const DOLLAR_RATES_URL = "https://dolarapi.com/v1/dolares";
 const DOLLAR_SERIES_URL =
   "https://api.argentinadatos.com/v1/cotizaciones/dolares";
+const COUNTRY_RISK_URL =
+  "https://api.argentinadatos.com/v1/finanzas/indices/riesgo-pais";
+const UVA_URL = "https://api.argentinadatos.com/v1/finanzas/indices/uva";
 
 const INFLATION_TTL_MS = 60 * 60 * 1000;
 const DOLLAR_TTL_MS = 5 * 60 * 1000;
+const INDICATOR_TTL_MS = 30 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 5_000;
 
 interface CacheEntry {
@@ -148,4 +152,42 @@ export async function getDollarSeriesWindow(
       points.filter((point) => point.date >= since),
     ]),
   );
+}
+
+export interface IndicatorSnapshot {
+  value: number;
+  date: string;
+  previousValue: number | null;
+}
+
+async function getIndicator(
+  url: string,
+  cacheKey: string,
+  ttlMs: number,
+): Promise<IndicatorSnapshot | null> {
+  const data = await cached<InflationRecord[]>(cacheKey, ttlMs, async () => {
+    const records = await fetchJson<InflationRecord[]>(url, 8_000);
+    return [...records].sort((a, b) => a.fecha.localeCompare(b.fecha));
+  });
+
+  if (!data || data.length === 0) {
+    return null;
+  }
+
+  const latest = data[data.length - 1];
+  const previous = data.length > 1 ? data[data.length - 2] : null;
+
+  return {
+    value: latest.valor,
+    date: latest.fecha,
+    previousValue: previous?.valor ?? null,
+  };
+}
+
+export function getCountryRisk(): Promise<IndicatorSnapshot | null> {
+  return getIndicator(COUNTRY_RISK_URL, "country-risk", INDICATOR_TTL_MS);
+}
+
+export function getUva(): Promise<IndicatorSnapshot | null> {
+  return getIndicator(UVA_URL, "uva", INDICATOR_TTL_MS);
 }

@@ -3,11 +3,13 @@ import Layout from "../layouts/Layout.astro";
 import InflationCalculator from "../components/InflationCalculator";
 import CurrencyConverter from "../components/CurrencyConverter";
 import SummaryCards from "../components/SummaryCards.astro";
-import { getDollarRates, getInflation } from "../lib/api";
+import { getCountryRisk, getDollarRates, getInflation, getUva } from "../lib/api";
 
-const [inflation, dollarRates] = await Promise.all([
+const [inflation, dollarRates, countryRisk, uva] = await Promise.all([
   getInflation(),
   getDollarRates(),
+  getCountryRisk(),
+  getUva(),
 ]);
 
 if (inflation.length > 0 && dollarRates.length > 0) {
@@ -30,7 +32,12 @@ if (inflation.length > 0 && dollarRates.length > 0) {
       Inflación y dólar en Argentina, con datos actualizados.
     </p>
 
-    <SummaryCards inflation={inflation} rates={dollarRates} />
+    <SummaryCards
+      inflation={inflation}
+      rates={dollarRates}
+      countryRisk={countryRisk}
+      uva={uva}
+    />
 
     <div
       class="flex flex-col items-center justify-center gap-4 w-full"

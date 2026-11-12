@@ -32,6 +32,9 @@ ChartJS.register(
   Legend,
 );
 
+/**
+ * @param {{ initialData?: import("../lib/api").InflationRecord[] }} props
+ */
 const InflationGraph = ({ initialData = [] }) => {
   const lastDate = initialData[initialData.length - 1]?.fecha ?? "";
 

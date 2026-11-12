@@ -2,6 +2,7 @@
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import SpeedInsights from "@vercel/speed-insights/astro";
+import Analytics from "@vercel/analytics/astro";
 import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 
@@ -75,10 +76,34 @@ const socialImage = new URL(image, site).href;
 
     <!-- Speed Insights -->
     <SpeedInsights />
+    <!-- Analytics -->
+    <Analytics />
     <!-- Client Router -->
     <ClientRouter />
     <!-- Título de la página -->
     <title>{pageTitle}</title>
+
+    <!-- Datos estructurados -->
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        name: "ARGENTISTA",
+        url: new URL("/", site).href,
+        description,
+        applicationCategory: "FinanceApplication",
+        operatingSystem: "Web",
+        inLanguage: "es-AR",
+        isAccessibleForFree: true,
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "ARS",
+        },
+      })}
+    />
   </head>
   <body class="bg-gray-100 text-gray-900">
     <div class="flex flex-col min-h-screen">
@@ -88,5 +113,16 @@ const socialImage = new URL(image, site).href;
       </main>
       <Footer transition:persist />
     </div>
+    {
+      import.meta.env.PROD && (
+        <script is:inline>
+          if ("serviceWorker" in navigator) {
+            window.addEventListener("load", () => {
+              navigator.serviceWorker.register("/sw.js").catch(() => {});
+            });
+          }
+        </script>
+      )
+    }
   </body>
 </html>

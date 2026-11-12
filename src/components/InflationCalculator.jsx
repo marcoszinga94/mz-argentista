@@ -22,6 +22,9 @@ const months = [
   { value: "12", label: "Diciembre" },
 ];
 
+/**
+ * @param {{ initialData?: import("../lib/api").InflationRecord[] }} props
+ */
 const InflationCalculator = ({ initialData = [] }) => {
   const latest = initialData[initialData.length - 1];
   const defaultEnd = latest

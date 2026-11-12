@@ -9,14 +9,17 @@
 
 ## Características
 
+- **Resumen económico:** inflación mensual, inflación interanual, dólar oficial y blue con la brecha contra el oficial.
 - **Calculadora de inflación:** ajusta un monto entre dos meses con el índice mensual y muestra inflación total, mensual promedio y anualizada.
-- **Conversor de moneda:** convierte entre pesos y dólares con las cotizaciones vigentes, en ambos sentidos.
-- **Cotizaciones del dólar:** lista los precios de venta de las casas disponibles en `dolarapi.com`.
-- **Histórico por casa:** gráfico de líneas con oficial, blue, bolsa, contado con liquidación, mayorista, cripto y tarjeta; permite comparar series y cambiar el rango temporal.
-- **Inflación mensual:** gráfico interactivo con filtro por fechas.
+- **Conversor de moneda:** convierte entre pesos y dólares con las cotizaciones vigentes, en ambos sentidos y con la tasa correcta según la dirección.
+- **Cotizaciones del dólar:** lista compra y venta de las casas disponibles en `dolarapi.com`.
+- **Histórico por casa:** gráfico de líneas con oficial, blue, bolsa, contado con liquidación, mayorista, cripto y tarjeta; permite cambiar el rango temporal.
+- **Inflación mensual:** gráfico interactivo con filtro por fechas, abierto en los últimos diez años.
 - **Detalle histórico:** agrupación por década y año con mínimos, máximos y promedios mensuales.
-- **Navegación por secciones:** inicio con calculadora y conversor, `/dolar` y `/inflacion`.
-- **PWA:** `manifest.json` con iconos y modo standalone para instalar la app.
+- **Datos en el servidor:** las páginas consultan las APIs durante el render, con caché en memoria y en el CDN; las islas reciben los datos ya resueltos.
+- **Navegación por secciones:** inicio con resumen, calculadora y conversor; `/dolar` y `/inflacion`.
+- **PWA:** manifiesto, iconos y service worker que cachea solo los assets estáticos.
+- **SEO:** sitemap, `robots.txt`, canonical, Open Graph y datos estructurados.
 - **Responsive:** layout adaptable con Tailwind CSS.
 
 ## Stack
@@ -35,15 +38,15 @@
 
 ```text
 src/
-  pages/         index, dolar e inflacion
-  components/    calculadoras, conversor y gráficos en React
+  pages/         index, dolar, inflacion, 404, 500, sitemap y endpoint de series
+  components/    calculadoras, conversor, gráficos y resumen en React/Astro
+  lib/           acceso a APIs con caché, cálculos y tema de gráficos
   layouts/       Layout.astro
   styles/        CSS global con Tailwind
   test/          setup de Vitest
   basic.test.ts  test base
-public/          iconos de la app
+public/          iconos, manifiesto, service worker, robots y Open Graph
 docs/            notas de arquitectura
-manifest.json    manifiesto PWA
 ```
 
 ## Puesta en marcha
@@ -51,7 +54,7 @@ manifest.json    manifiesto PWA
 ### Requisitos
 
 - Node.js 20 o superior y npm.
-- Conexión a internet: los datos se consultan desde el navegador.
+- Conexión a internet: las páginas consultan las APIs públicas durante el render.
 
 ### Instalación
 
@@ -74,13 +77,15 @@ npm run dev
 ## Despliegue
 
 El proyecto usa el adapter de Vercel y las integraciones de Analytics y Speed Insights,
-así que se despliega directamente en Vercel. No requiere variables de entorno ni backend
-propio: las consultas salen del cliente hacia las APIs públicas.
+así que se despliega directamente en Vercel. No requiere variables de entorno: las
+consultas a las APIs públicas se hacen en el servidor, con caché en memoria y cabeceras
+`Cache-Control` para el CDN.
 
 ## Estado del proyecto
 
-Aplicación funcional con las tres vistas operativas. La cobertura de tests es mínima: hoy
-solo existe un test base de Vitest.
+Aplicación funcional con las tres vistas operativas, páginas de error, sitemap y PWA
+instalable. La lógica de cálculo y el parseo de montos están cubiertos por tests; los
+componentes de React todavía no tienen tests propios.
 
 ## Licencia
 

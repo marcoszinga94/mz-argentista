@@ -235,6 +235,12 @@ const chartOptions = {
 const selectStyles =
   "w-full sm:w-auto p-2 sm:p-2.5 pr-8 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
 
+/**
+ * @param {{
+ *   initialSeries?: import("../lib/api").DollarSeries | null,
+ *   initialRange?: number | "all"
+ * }} props
+ */
 const DollarHistoryChart = ({ initialSeries = null, initialRange = 0.25 }) => {
   const [timeRange, setTimeRange] = useState(initialRange);
   const [series, setSeries] = useState(initialSeries);

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { formatAmount, parseAmount } from "../lib/finance";
 
+/**
+ * @param {{ initialRates?: import("../lib/api").DollarRate[] }} props
+ */
 const CurrencyConverter = ({ initialRates = [] }) => {
   const [amount, setAmount] = useState("");
   const [selectedCasa, setSelectedCasa] = useState(() => {

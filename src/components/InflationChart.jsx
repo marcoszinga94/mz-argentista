@@ -47,6 +47,9 @@ const formatDate = (year, month) => {
   return date.toLocaleString("es-AR", { month: "long", year: "numeric" });
 };
 
+/**
+ * @param {{ initialData?: import("../lib/api").InflationRecord[] }} props
+ */
 const InflationChart = ({ initialData = [] }) => {
   const inflationData = useMemo(
     () => groupDataByDecadeAndYear(initialData),

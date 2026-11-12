@@ -1,3 +1,9 @@
+import type {
+  ChartOptions,
+  FontSpec,
+  TooltipOptions,
+} from "chart.js";
+
 export const CHART_FONT =
   "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif";
 
@@ -5,11 +11,11 @@ const GRID_COLOR = "rgba(0, 0, 0, 0.05)";
 const TICK_COLOR = "#6B7280";
 const LEGEND_COLOR = "#374151";
 
-function font(size, weight) {
+function font(size: number, weight: FontSpec["weight"] = "normal"): Partial<FontSpec> {
   return { family: CHART_FONT, size, weight };
 }
 
-export const baseChartOptions = {
+export const baseChartOptions: ChartOptions<"line"> = {
   responsive: true,
   maintainAspectRatio: false,
   interaction: {
@@ -19,16 +25,16 @@ export const baseChartOptions = {
 };
 
 export const baseLegend = {
-  position: "bottom",
+  position: "bottom" as const,
   labels: {
     usePointStyle: true,
     padding: 20,
     color: LEGEND_COLOR,
-    font: font(12, "500"),
+    font: font(12, 500),
   },
 };
 
-export const baseTooltip = {
+export const baseTooltip: Partial<TooltipOptions<"line">> = {
   backgroundColor: "rgba(255, 255, 255, 0.95)",
   titleColor: "#111827",
   bodyColor: "#374151",
@@ -41,16 +47,16 @@ export const baseTooltip = {
   bodyFont: font(13),
 };
 
-export function axisTitle(text) {
+export function axisTitle(text: string) {
   return {
     display: true,
     text,
     color: TICK_COLOR,
-    font: font(12, "500"),
+    font: font(12, 500),
   };
 }
 
-export function axisTicks(extra = {}) {
+export function axisTicks<T extends Record<string, unknown>>(extra?: T) {
   return {
     color: TICK_COLOR,
     font: { family: CHART_FONT },
@@ -58,4 +64,4 @@ export function axisTicks(extra = {}) {
   };
 }
 
-export const baseGrid = { color: GRID_COLOR };
+export const baseGrid: { color: string } = { color: GRID_COLOR };

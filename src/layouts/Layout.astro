@@ -17,9 +17,14 @@ const {
   title,
   description = "ARGENTISTA es una aplicación que te permite conocer la economía de Argentina, con datos en tiempo real sobre la inflación y otros indicadores económicos.",
   keywords = "inflación argentina, economía argentina, calculadora de inflación, estadísticas económicas",
-  url = "https://argentista.vercel.app/",
   image = "/og_image.jpg",
 } = Astro.props;
+
+const site = Astro.site ?? new URL("https://argentista.vercel.app");
+const pageTitle =
+  title === "ARGENTISTA" ? "ARGENTISTA" : `${title} | ARGENTISTA`;
+const canonical = new URL(Astro.url.pathname, site).href;
+const socialImage = new URL(image, site).href;
 ---
 
 <!doctype html>
@@ -30,10 +35,14 @@ const {
 
     <!-- Icono de la aplicación -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Manifiesto -->
-    <link rel="manifest" href="manifest.json" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#2563eb" />
+
+    <!-- Canonical -->
+    <link rel="canonical" href={canonical} />
 
     <!-- Meta para el SEO -->
     <meta name="description" content={description} />
@@ -41,17 +50,22 @@ const {
     <meta name="robots" content="index, follow" />
 
     <!-- Meta para redes sociales -->
-    <meta property="og:title" content={title} />
+    <meta property="og:site_name" content="ARGENTISTA" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
-    <meta property="og:url" content={url} />
+    <meta property="og:image" content={socialImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="ARGENTISTA: inflación y dólar en Argentina" />
+    <meta property="og:url" content={canonical} />
     <meta property="og:type" content="website" />
 
     <!-- Meta para Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
+    <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image} />
+    <meta name="twitter:image" content={socialImage} />
 
     <!-- Código de GoogleAdSense -->
     <script
@@ -64,7 +78,7 @@ const {
     <!-- Client Router -->
     <ClientRouter />
     <!-- Título de la página -->
-    <title>{title}</title>
+    <title>{pageTitle}</title>
   </head>
   <body class="bg-gray-100 text-gray-900">
     <div class="flex flex-col min-h-screen">

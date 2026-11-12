@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useMemo, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -18,62 +18,31 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
-const InflationGraph = () => {
-  const [inflationData, setInflationData] = useState([]);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [chartData, setChartData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+const InflationGraph = ({ initialData = [] }) => {
+  const [startDate, setStartDate] = useState(initialData[0]?.fecha ?? "");
+  const [endDate, setEndDate] = useState(
+    initialData[initialData.length - 1]?.fecha ?? "",
+  );
 
-  useEffect(() => {
-    const fetchInflationData = async () => {
-      try {
-        const response = await fetch(
-          "https://api.argentinadatos.com/v1/finanzas/indices/inflacion"
-        );
-        if (!response.ok) {
-          throw new Error("No se pudo obtener la información de inflación");
-        }
-        const data = await response.json();
-        setInflationData(
-          data.sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
-        );
-        setIsLoading(false);
-      } catch (error) {
-        setError(error.message);
-        setIsLoading(false);
-      }
-    };
-
-    fetchInflationData();
-  }, []);
-
-  useEffect(() => {
-    if (inflationData.length > 0) {
-      setStartDate(inflationData[0].fecha);
-      setEndDate(inflationData[inflationData.length - 1].fecha);
-    }
-  }, [inflationData]);
-
-  const updateChart = useCallback(() => {
-    const filteredData = inflationData.filter(
-      (item) => item.fecha >= startDate && item.fecha <= endDate
+  const chartData = useMemo(() => {
+    const filteredData = initialData.filter(
+      (item) => item.fecha >= startDate && item.fecha <= endDate,
     );
 
-    const labels = filteredData.map((item) => item.fecha);
-    const values = filteredData.map((item) => item.valor);
+    if (filteredData.length === 0) {
+      return null;
+    }
 
-    setChartData({
-      labels,
+    return {
+      labels: filteredData.map((item) => item.fecha),
       datasets: [
         {
           label: "Inflación Mensual (%)",
-          data: values,
-          borderColor: "rgb(37, 99, 235)", // blue-600
+          data: filteredData.map((item) => item.valor),
+          borderColor: "rgb(37, 99, 235)",
           backgroundColor: "rgba(37, 99, 235, 0.1)",
           tension: 0.3,
           borderWidth: 2,
@@ -81,14 +50,8 @@ const InflationGraph = () => {
           pointHoverRadius: 5,
         },
       ],
-    });
-  }, [inflationData, startDate, endDate]);
-
-  useEffect(() => {
-    if (startDate && endDate) {
-      updateChart();
-    }
-  }, [startDate, endDate, updateChart]);
+    };
+  }, [endDate, initialData, startDate]);
 
   const chartOptions = {
     responsive: true,
@@ -217,22 +180,24 @@ const InflationGraph = () => {
         </div>
       </div>
       <div className="h-72 sm:h-80 md:h-[28rem] lg:h-[32rem] relative w-full">
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
-            <div className="flex flex-col items-center gap-2 sm:gap-3">
-              <div className="animate-spin rounded-full h-6 sm:h-8 w-6 sm:w-8 border-b-2 border-blue-600"></div>
-              <span className="text-xs sm:text-sm font-medium text-gray-500">Cargando...</span>
-            </div>
+        {initialData.length === 0 ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-sm font-medium text-gray-600">
+              No pudimos cargar la evolución de la inflación.
+            </p>
           </div>
+        ) : (
+          <>
+            {chartData && <Line data={chartData} options={chartOptions} />}
+            {!chartData && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <p className="text-sm font-medium text-gray-600">
+                  No hay datos en el rango seleccionado.
+                </p>
+              </div>
+            )}
+          </>
         )}
-        {error && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
-            <div className="p-3 sm:p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg sm:rounded-xl text-center text-xs sm:text-sm">
-              <span className="font-medium">Error: {error}</span>
-            </div>
-          </div>
-        )}
-        {chartData && <Line data={chartData} options={chartOptions} />}
       </div>
     </section>
   );

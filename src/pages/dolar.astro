@@ -2,6 +2,23 @@
 import Layout from "../layouts/Layout.astro";
 import DollarPrices from "../components/DollarPrices";
 import DollarHistoryChart from "../components/DollarHistoryChart";
+import { getDollarRates, getDollarSeriesWindow } from "../lib/api";
+
+const [dollarRates, dollarSeries] = await Promise.all([
+  getDollarRates(),
+  getDollarSeriesWindow(),
+]);
+
+const hasSeries = Object.values(dollarSeries).some(
+  (points) => points.length > 0,
+);
+
+if (dollarRates.length > 0 && hasSeries) {
+  Astro.response.headers.set(
+    "Cache-Control",
+    "public, s-maxage=300, stale-while-revalidate=900",
+  );
+}
 ---
 
 <Layout
@@ -11,7 +28,7 @@ import DollarHistoryChart from "../components/DollarHistoryChart";
   <section
     class="flex flex-col items-center justify-center gap-4 sm:gap-6 m-auto max-w-5xl w-full px-3 sm:px-4"
   >
-    <DollarPrices client:load />
-    <DollarHistoryChart client:load />
+    <DollarPrices client:load initialRates={dollarRates} />
+    <DollarHistoryChart client:load initialSeries={dollarSeries} />
   </section>
 </Layout>

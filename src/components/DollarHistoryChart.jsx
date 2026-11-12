@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Line } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -20,301 +20,337 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
 );
 
-const DollarHistoryChart = () => {
-  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedCasas, setSelectedCasas] = useState([
-    "oficial",
-    "blue",
-    "bolsa",
-    "contadoconliqui",
-    "mayorista",
-    "cripto",
-    "tarjeta",
-  ]);
-  const [timeRange, setTimeRange] = useState(0.25);
+const CASAS = [
+  "oficial",
+  "blue",
+  "bolsa",
+  "contadoconliqui",
+  "mayorista",
+  "cripto",
+  "tarjeta",
+];
 
-  const casaColors = [
-    "rgba(14, 165, 233, 1)", // Sky 500 - Oficial
-    "rgba(239, 68, 68, 1)", // Red 500 - Blue
-    "rgba(249, 115, 22, 1)", // Orange 500 - Bolsa
-    "rgba(168, 85, 247, 1)", // Purple 500 - Contado con liqui
-    "rgba(59, 130, 246, 1)", // Blue 500 - Mayorista
-    "rgba(234, 179, 8, 1)", // Yellow 500 - Cripto
-    "rgba(16, 185, 129, 1)", // Emerald 500 - Tarjeta
-  ];
+const CASA_LABELS = {
+  oficial: "Oficial",
+  blue: "Blue",
+  bolsa: "Bolsa",
+  contadoconliqui: "Contado con liqui",
+  mayorista: "Mayorista",
+  cripto: "Cripto",
+  tarjeta: "Tarjeta",
+};
 
-  useEffect(() => {
-    fetchDollarData();
-  }, [selectedCasas, timeRange]);
+const CASA_COLORS = [
+  "rgba(14, 165, 233, 1)",
+  "rgba(239, 68, 68, 1)",
+  "rgba(249, 115, 22, 1)",
+  "rgba(168, 85, 247, 1)",
+  "rgba(59, 130, 246, 1)",
+  "rgba(234, 179, 8, 1)",
+  "rgba(16, 185, 129, 1)",
+];
 
-  const fetchDollarData = async () => {
-    setIsLoading(true);
-    setError(null);
+const MAX_POINTS = {
+  "0.25": 14,
+  1: 31,
+  3: 92,
+  6: 183,
+  12: 366,
+  all: 1000,
+};
 
-    const endDate = new Date();
-    const startDate =
-      timeRange === "all"
-        ? new Date(2000, 0, 1)
-        : timeRange >= 1
-          ? subMonths(endDate, timeRange)
-          : subWeeks(endDate, Math.floor(timeRange * 4));
+const rangeCache = new Map();
 
-    try {
-      const allData = await fetchDataForDateRange(startDate, endDate);
+function rangeStart(range) {
+  const end = new Date();
+  if (range === "all") {
+    return null;
+  }
+  if (range >= 1) {
+    return subMonths(end, range);
+  }
+  return subWeeks(end, Math.max(1, Math.round(range * 4)));
+}
 
-      // Process each dataset to fill missing data
-      const filledData = allData.map((data) => fillMissingData(data));
+function getPointConfig(range) {
+  if (range === "all") return { radius: 0, hitRadius: 10 };
+  if (range >= 12) return { radius: 1, hitRadius: 10 };
+  if (range >= 6) return { radius: 2, hitRadius: 8 };
+  if (range >= 3) return { radius: 3, hitRadius: 6 };
+  if (range >= 1) return { radius: 4, hitRadius: 6 };
+  return { radius: 5, hitRadius: 6 };
+}
 
-      const preparedData = prepareChartData(filledData);
-      setChartData(preparedData);
-    } catch (error) {
-      setError(error.message || "Error al obtener los datos del dólar");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+function getTicksConfig(range) {
+  if (range === "all") return { maxTicksLimit: 12 };
+  if (range >= 12) return { maxTicksLimit: 12 };
+  if (range >= 6) return { maxTicksLimit: 12 };
+  if (range >= 3) return { maxTicksLimit: 6 };
+  if (range >= 1) return { maxTicksLimit: 30 };
+  return { maxTicksLimit: 7 };
+}
 
-  const fetchDataForDateRange = async (startDate, endDate) => {
-    try {
-      const results = await Promise.all(
-        selectedCasas.map((casa) =>
-          fetch(
-            `https://api.argentinadatos.com/v1/cotizaciones/dolares/${casa}`
-          )
-            .then((res) => (res.ok ? res.json() : []))
-            .catch((error) => {
-              console.error(`Error fetching ${casa}:`, error);
-              return [];
-            })
-        )
-      );
+function formatLabel(date, range) {
+  const parsed = new Date(`${date}T00:00:00`);
+  if (range === "all") {
+    return format(parsed, "MMM-yyyy", { locale: es });
+  }
+  if (range >= 12) {
+    return format(parsed, "MMM-yy", { locale: es });
+  }
+  return format(parsed, "d-M-yy", { locale: es });
+}
 
-      // Filter and sort data by date range
-      return results.map((casaData) =>
-        casaData
-          .filter((entry) => {
-            const entryDate = new Date(entry.fecha);
-            return entryDate >= startDate && entryDate <= endDate;
-          })
-          .sort((a, b) => new Date(a.fecha) - new Date(b.fecha))
-          .map((entry) => ({
-            date: entry.fecha,
-            venta: parseFloat(entry.venta) || null,
-          }))
-      );
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      return [];
-    }
-  };
+function prepareChartData(series, range) {
+  const dateSet = new Set();
+  CASAS.forEach((casa) => {
+    (series[casa] ?? []).forEach((point) => dateSet.add(point.date));
+  });
 
-  const fillMissingData = (data) => {
-    let lastValidValue = null;
-    return data.map((item) => {
-      if (item.venta === null) {
-        // Si el valor es nulo, usa el último valor válido
-        item.venta = lastValidValue;
-      } else {
-        // Si el valor es válido, actualiza el último valor válido
-        lastValidValue = item.venta;
+  const allDates = [...dateSet].sort((a, b) => a.localeCompare(b));
+  if (allDates.length === 0) {
+    return { labels: [], datasets: [] };
+  }
+
+  const maxPoints = MAX_POINTS[String(range)] ?? 366;
+  const step = Math.max(1, Math.ceil(allDates.length / maxPoints));
+  const dates = allDates.filter((_, index) => index % step === 0);
+  const maps = CASAS.map(
+    (casa) => new Map((series[casa] ?? []).map((point) => [point.date, point.venta])),
+  );
+  const pointConfig = getPointConfig(range);
+
+  const datasets = CASAS.map((casa, index) => {
+    let lastValue = null;
+    const data = dates.map((date) => {
+      const value = maps[index].get(date);
+      if (typeof value === "number") {
+        lastValue = value;
       }
-      return item;
-    });
-  };
-
-  const getTicksConfig = (timeRange) => {
-    if (timeRange === "all") return { maxTicksLimit: 12 };
-    if (timeRange == 12) return { maxTicksLimit: 12 }; // 1 año
-    if (timeRange == 6) return { maxTicksLimit: 12 }; // 6 meses
-    if (timeRange == 3) return { maxTicksLimit: 6 }; // 3 meses
-    if (timeRange == 1) return { maxTicksLimit: 30 }; // 1 mes
-    return { maxTicksLimit: 7 }; // 1 semana
-  };
-
-  const getPointConfig = (timeRange) => {
-    if (timeRange === "all") return { radius: 0, hitRadius: 10 };
-    if (timeRange == 12) return { radius: 1, hitRadius: 10 };
-    if (timeRange == 6) return { radius: 2, hitRadius: 8 };
-    if (timeRange == 3) return { radius: 3, hitRadius: 6 };
-    if (timeRange == 1) return { radius: 4, hitRadius: 6 };
-    return { radius: 5, hitRadius: 6 };
-  };
-
-  const getDataPointFrequency = (timeRange, totalPoints) => {
-    if (timeRange === "all") return Math.ceil(totalPoints / 1000); // 48 puntos en total
-    if (timeRange == 12) return Math.ceil(totalPoints / 365); // 24 puntos para 1 año
-    if (timeRange == 6) return Math.ceil(totalPoints / 180); // 12 puntos para 6 meses
-    if (timeRange == 3) return Math.ceil(totalPoints / 90); // 8 puntos para 3 meses
-    if (timeRange == 1) return Math.ceil(totalPoints / 30); // 6 puntos para 1 mes
-    return 1; // Todos los puntos para 1 semana
-  };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: 'index',
-      intersect: false,
-    },
-    scales: {
-      y: {
-        beginAtZero: false,
-        grid: {
-          color: 'rgba(0, 0, 0, 0.05)',
-        },
-        title: {
-          display: true,
-          text: "Precio en ARS",
-          color: "#6B7280",
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12,
-            weight: '500',
-          }
-        },
-        ticks: {
-          color: "#6B7280",
-          font: {
-            family: "'Inter', sans-serif",
-          }
-        },
-      },
-      x: {
-        grid: {
-          display: false,
-        },
-        title: {
-          display: true,
-          text: "Fecha",
-          color: "#6B7280",
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12,
-            weight: '500',
-          }
-        },
-        ticks: {
-          color: "#6B7280",
-          font: {
-            family: "'Inter', sans-serif",
-          },
-          ...getTicksConfig(timeRange),
-          autoSkip: true,
-          maxRotation: 45,
-          minRotation: 45,
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        position: 'bottom',
-        labels: {
-          usePointStyle: true,
-          padding: 20,
-          color: "#374151",
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12,
-            weight: '500',
-          }
-        },
-      },
-      tooltip: {
-        backgroundColor: 'rgba(255, 255, 255, 0.95)',
-        titleColor: '#111827',
-        bodyColor: '#374151',
-        borderColor: '#E5E7EB',
-        borderWidth: 1,
-        padding: 12,
-        boxPadding: 6,
-        usePointStyle: true,
-        titleFont: {
-          family: "'Inter', sans-serif",
-          size: 14,
-          weight: 'bold',
-        },
-        bodyFont: {
-          family: "'Inter', sans-serif",
-          size: 13,
-        },
-      }
-    },
-  };
-
-  const prepareChartData = (data) => {
-    const validData = data.filter(d => d && d.length > 0);
-    if (validData.length === 0) {
-      return { labels: [], datasets: [] };
-    }
-
-    const allDates = [...new Set(validData.flat().map((item) => item.date))].sort(
-      (a, b) => new Date(a) - new Date(b)
-    );
-
-    // Calcular la frecuencia de los puntos
-    const frequency = getDataPointFrequency(timeRange, allDates.length);
-    const filteredDates = allDates.filter(
-      (_, index) => index % frequency === 0
-    );
-
-    const dataByDate = selectedCasas.map((_, index) => {
-      const casaData = data[index];
-      return Object.fromEntries(
-        casaData.map((item) => [item.date, item.venta])
-      );
+      return lastValue;
     });
 
-    const pointConfig = getPointConfig(timeRange);
-
-    const datasets = selectedCasas.map((casa, index) => ({
-      label: `Dólar ${casa.charAt(0).toUpperCase() + casa.slice(1)}`,
-      data: filteredDates.map((date) => dataByDate[index][date] || null),
-      borderColor: casaColors[index % casaColors.length],
-      backgroundColor: casaColors[index % casaColors.length],
+    return {
+      label: `Dólar ${CASA_LABELS[casa]}`,
+      data,
+      borderColor: CASA_COLORS[index],
+      backgroundColor: CASA_COLORS[index],
       tension: 0.3,
       borderWidth: 2,
       spanGaps: true,
       pointRadius: pointConfig.radius,
       pointHitRadius: pointConfig.hitRadius,
       pointHoverRadius: pointConfig.radius + 3,
-      pointBackgroundColor: '#fff',
+      pointBackgroundColor: "#fff",
       pointBorderWidth: 2,
-    }));
-
-    return {
-      labels: filteredDates.map((date) =>
-        format(
-          new Date(date),
-          timeRange == "all"
-            ? "MMM-yyyy"
-            : timeRange >= 12
-              ? "MMM-yy"
-              : timeRange >= 3
-                ? "d-M-yy"
-                : "d-M-yy",
-          { locale: es }
-        )
-      ),
-      datasets,
     };
+  });
+
+  return {
+    labels: dates.map((date) => formatLabel(date, range)),
+    datasets,
   };
+}
 
-  const timeRangeOptions = [
-    { value: 0.25, label: "1 semana" },
-    { value: 1, label: "1 mes" },
-    { value: 3, label: "3 meses" },
-    { value: 6, label: "6 meses" },
-    { value: 12, label: "1 año" },
-    { value: "all", label: "Todo el historial" },
-  ];
+async function fetchSeries(range) {
+  const start = rangeStart(range);
+  const since = start ? start.toISOString().slice(0, 10) : "";
+  const cacheKey = since || "all";
 
-  const selectStyles =
-    "w-full sm:w-auto p-2 sm:p-2.5 pr-8 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
+  if (rangeCache.has(cacheKey)) {
+    return rangeCache.get(cacheKey);
+  }
+
+  const params = new URLSearchParams();
+  if (since) {
+    params.set("desde", since);
+  }
+
+  const response = await fetch(`/api/dolar-series.json?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error("No se pudo cargar el histórico del dólar");
+  }
+
+  const data = await response.json();
+  rangeCache.set(cacheKey, data);
+  return data;
+}
+
+const timeRangeOptions = [
+  { value: 0.25, label: "1 semana" },
+  { value: 1, label: "1 mes" },
+  { value: 3, label: "3 meses" },
+  { value: 6, label: "6 meses" },
+  { value: 12, label: "1 año" },
+  { value: "all", label: "Todo el historial" },
+];
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  interaction: {
+    mode: "index",
+    intersect: false,
+  },
+  scales: {
+    y: {
+      beginAtZero: false,
+      grid: {
+        color: "rgba(0, 0, 0, 0.05)",
+      },
+      title: {
+        display: true,
+        text: "Precio en ARS",
+        color: "#6B7280",
+        font: {
+          family: "'Inter', sans-serif",
+          size: 12,
+          weight: "500",
+        },
+      },
+      ticks: {
+        color: "#6B7280",
+        font: {
+          family: "'Inter', sans-serif",
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      title: {
+        display: true,
+        text: "Fecha",
+        color: "#6B7280",
+        font: {
+          family: "'Inter', sans-serif",
+          size: 12,
+          weight: "500",
+        },
+      },
+      ticks: {
+        color: "#6B7280",
+        font: {
+          family: "'Inter', sans-serif",
+        },
+        autoSkip: true,
+        maxRotation: 45,
+        minRotation: 45,
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      position: "bottom",
+      labels: {
+        usePointStyle: true,
+        padding: 20,
+        color: "#374151",
+        font: {
+          family: "'Inter', sans-serif",
+          size: 12,
+          weight: "500",
+        },
+      },
+    },
+    tooltip: {
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
+      titleColor: "#111827",
+      bodyColor: "#374151",
+      borderColor: "#E5E7EB",
+      borderWidth: 1,
+      padding: 12,
+      boxPadding: 6,
+      usePointStyle: true,
+      titleFont: {
+        family: "'Inter', sans-serif",
+        size: 14,
+        weight: "bold",
+      },
+      bodyFont: {
+        family: "'Inter', sans-serif",
+        size: 13,
+      },
+    },
+  },
+};
+
+const selectStyles =
+  "w-full sm:w-auto p-2 sm:p-2.5 pr-8 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
+
+const DollarHistoryChart = ({ initialSeries = null, initialRange = 0.25 }) => {
+  const [timeRange, setTimeRange] = useState(initialRange);
+  const [series, setSeries] = useState(initialSeries);
+  const [isLoading, setIsLoading] = useState(!initialSeries);
+  const [error, setError] = useState(null);
+  const [attempt, setAttempt] = useState(0);
+  const firstRun = useRef(true);
+
+  const chartData = useMemo(
+    () => prepareChartData(series ?? {}, timeRange),
+    [series, timeRange],
+  );
+
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      if (initialSeries) {
+        return;
+      }
+    }
+
+    let active = true;
+
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await fetchSeries(timeRange);
+        if (active) {
+          setSeries(data);
+        }
+      } catch (loadError) {
+        if (active) {
+          setError("No pudimos cargar el histórico del dólar.");
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      active = false;
+    };
+  }, [attempt, timeRange]);
+
+  const hasData = chartData.datasets.some((dataset) =>
+    dataset.data.some((value) => value !== null),
+  );
+
+  const options = useMemo(
+    () => ({
+      ...chartOptions,
+      scales: {
+        ...chartOptions.scales,
+        x: {
+          ...chartOptions.scales.x,
+          ticks: {
+            ...chartOptions.scales.x.ticks,
+            ...getTicksConfig(timeRange),
+          },
+        },
+      },
+    }),
+    [timeRange],
+  );
 
   return (
     <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full max-w-5xl mx-auto transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
@@ -322,7 +358,7 @@ const DollarHistoryChart = () => {
         <h2 className="text-lg sm:text-xl md:text-2xl font-black text-blue-600 tracking-tight">
           Histórico del Dólar
         </h2>
-        
+
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
           <label
             htmlFor="time-range-select"
@@ -337,7 +373,7 @@ const DollarHistoryChart = () => {
               setTimeRange(
                 e.target.value === "all"
                   ? "all"
-                  : Number.parseFloat(e.target.value)
+                  : Number.parseFloat(e.target.value),
               )
             }
             className={selectStyles}
@@ -356,18 +392,37 @@ const DollarHistoryChart = () => {
           <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
             <div className="flex flex-col items-center gap-2 sm:gap-3">
               <div className="animate-spin rounded-full h-6 sm:h-8 w-6 sm:w-8 border-b-2 border-blue-600"></div>
-              <span className="text-xs sm:text-sm font-medium text-gray-500">Cargando...</span>
+              <span className="text-xs sm:text-sm font-medium text-gray-500">
+                Cargando...
+              </span>
             </div>
           </div>
         )}
         {error && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10 rounded-xl sm:rounded-2xl">
             <div className="p-3 sm:p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg sm:rounded-xl text-center text-xs sm:text-sm">
-              <span className="font-medium">Error: {error}</span>
+              <p className="font-medium">{error}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  rangeCache.clear();
+                  setAttempt((value) => value + 1);
+                }}
+                className="mt-2 px-3 py-1.5 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors"
+              >
+                Reintentar
+              </button>
             </div>
           </div>
         )}
-        <Line data={chartData} options={chartOptions} />
+        {!isLoading && !error && !hasData && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <p className="text-sm font-medium text-gray-600">
+              No hay datos para el rango seleccionado.
+            </p>
+          </div>
+        )}
+        <Line data={chartData} options={options} />
       </div>
     </div>
   );

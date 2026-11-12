@@ -2,6 +2,16 @@
 import Layout from "../layouts/Layout.astro";
 import InflationChart from "../components/InflationChart";
 import InflationGraph from "../components/InflationGraph";
+import { getInflation } from "../lib/api";
+
+const inflation = await getInflation();
+
+if (inflation.length > 0) {
+  Astro.response.headers.set(
+    "Cache-Control",
+    "public, s-maxage=600, stale-while-revalidate=1800",
+  );
+}
 ---
 
 <Layout
@@ -11,7 +21,7 @@ import InflationGraph from "../components/InflationGraph";
   <div
     class="flex flex-col md:flex-row justify-center gap-4 sm:gap-6 m-auto max-w-5xl w-full px-3 sm:px-4"
   >
-    <InflationGraph client:load />
-    <InflationChart client:load />
+    <InflationGraph client:load initialData={inflation} />
+    <InflationChart client:load initialData={inflation} />
   </div>
 </Layout>

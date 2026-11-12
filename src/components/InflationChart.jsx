@@ -1,94 +1,71 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 
-const InflationChart = () => {
-  const [inflationData, setInflationData] = useState({});
-  const [openItems, setOpenItems] = useState({});
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+function groupDataByDecadeAndYear(data) {
+  return data.reduce((acc, item) => {
+    const [year, month] = item.fecha.split("-");
+    const decade = `${Math.floor(year / 10) * 10}s`;
 
-  useEffect(() => {
-    const fetchInflationData = async () => {
-      try {
-        const response = await fetch(
-          "https://api.argentinadatos.com/v1/finanzas/indices/inflacion"
-        );
-        if (!response.ok) {
-          throw new Error("No se pudo obtener la información de inflación");
-        }
-        const data = await response.json();
-        const groupedData = groupDataByDecadeAndYear(data);
-        setInflationData(groupedData);
+    if (!acc[decade]) {
+      acc[decade] = {};
+    }
+    if (!acc[decade][year]) {
+      acc[decade][year] = {
+        months: {},
+        min: Number.POSITIVE_INFINITY,
+        max: Number.NEGATIVE_INFINITY,
+        total: 0,
+        count: 0,
+      };
+    }
+    acc[decade][year].months[month] = item.valor;
+    acc[decade][year].min = Math.min(acc[decade][year].min, item.valor);
+    acc[decade][year].max = Math.max(acc[decade][year].max, item.valor);
+    acc[decade][year].total += item.valor;
+    acc[decade][year].count += 1;
+    return acc;
+  }, {});
+}
 
-        const decades = Object.keys(groupedData);
-        if (decades.length > 0) {
-          const lastDecade = decades.sort().pop();
-          const years = Object.keys(groupedData[lastDecade]);
-          if (years.length > 0) {
-            const initialOpenItems = {
-              [lastDecade]: true,
-              [`${lastDecade}-${years.sort().pop()}`]: true,
-            };
-            setOpenItems(initialOpenItems);
-          }
-        }
-        setIsLoading(false);
-      } catch (error) {
-        setError(error.message);
-        setIsLoading(false);
-      }
-    };
+function getInitialOpenItems(groupedData) {
+  const decades = Object.keys(groupedData);
+  if (decades.length === 0) {
+    return {};
+  }
 
-    fetchInflationData();
-  }, []);
+  const lastDecade = decades.sort().pop();
+  const years = Object.keys(groupedData[lastDecade]);
 
-  const groupDataByDecadeAndYear = (data) => {
-    return data.reduce((acc, item) => {
-      const [year, month] = item.fecha.split("-");
-      const decade = `${Math.floor(year / 10) * 10}s`;
-
-      if (!acc[decade]) {
-        acc[decade] = {};
-      }
-      if (!acc[decade][year]) {
-        acc[decade][year] = {
-          months: {},
-          min: Number.POSITIVE_INFINITY,
-          max: Number.NEGATIVE_INFINITY,
-          total: 0,
-          count: 0,
-        };
-      }
-      acc[decade][year].months[month] = item.valor;
-      acc[decade][year].min = Math.min(acc[decade][year].min, item.valor);
-      acc[decade][year].max = Math.max(acc[decade][year].max, item.valor);
-      acc[decade][year].total += item.valor;
-      acc[decade][year].count += 1;
-      return acc;
-    }, {});
+  return {
+    [lastDecade]: true,
+    [`${lastDecade}-${years.sort().pop()}`]: true,
   };
+}
 
-  const formatDate = (year, month) => {
-    const date = new Date(year, Number.parseInt(month) - 1);
-    return date.toLocaleString("es-AR", { month: "long", year: "numeric" });
-  };
+const formatDate = (year, month) => {
+  const date = new Date(year, Number.parseInt(month) - 1);
+  return date.toLocaleString("es-AR", { month: "long", year: "numeric" });
+};
+
+const InflationChart = ({ initialData = [] }) => {
+  const inflationData = useMemo(
+    () => groupDataByDecadeAndYear(initialData),
+    [initialData],
+  );
+  const [openItems, setOpenItems] = useState(() =>
+    getInitialOpenItems(inflationData),
+  );
 
   const toggleItem = (itemKey) => {
     setOpenItems((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
   };
 
-  if (isLoading) {
+  if (initialData.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-4 sm:p-6 bg-red-50 border border-red-100 text-red-600 rounded-xl sm:rounded-2xl text-center text-sm">
-        <span className="font-medium">Error: {error}</span>
-      </div>
+      <section className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full flex-1 text-center">
+        <p className="text-sm font-medium text-gray-600">
+          No pudimos cargar los índices de inflación.
+        </p>
+      </section>
     );
   }
 
@@ -120,7 +97,7 @@ const InflationChart = () => {
                 </svg>
               )}
             </button>
-            
+
             {openItems[decade] && (
               <div className="mt-2 sm:mt-3 space-y-2 sm:space-y-3 pl-2 sm:pl-4 border-l-2 border-blue-100 ml-2 sm:ml-4">
                 {Object.entries(years)
@@ -156,7 +133,7 @@ const InflationChart = () => {
                           )}
                         </div>
                       </button>
-                      
+
                       {openItems[`${decade}-${year}`] && (
                         <div className="overflow-x-auto border-t border-gray-100">
                           <table className="w-full text-left text-xs sm:text-sm">

@@ -1,3 +1,5 @@
+import { formatAmount } from "../lib/finance";
+
 const DollarPrices = ({ initialRates = [] }) => {
   const renderPriceCard = (price) => {
     const isOficial = price.casa === "oficial";
@@ -17,13 +19,13 @@ const DollarPrices = ({ initialRates = [] }) => {
           <div className="text-center">
             <span className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wide block mb-0.5">Compra</span>
             <span className={`text-base sm:text-lg font-bold ${isOficial ? "text-blue-800" : "text-gray-900"}`}>
-              ${price.compra?.toFixed(2) ?? "N/A"}
+              {typeof price.compra === "number" ? `$${formatAmount(price.compra)}` : "N/A"}
             </span>
           </div>
           <div className="text-center">
             <span className="text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wide block mb-0.5">Venta</span>
             <span className={`text-base sm:text-lg font-bold ${isOficial ? "text-blue-600" : "text-blue-600"}`}>
-              ${price.venta?.toFixed(2) ?? "N/A"}
+              {typeof price.venta === "number" ? `$${formatAmount(price.venta)}` : "N/A"}
             </span>
           </div>
         </div>
@@ -42,9 +44,12 @@ const DollarPrices = ({ initialRates = [] }) => {
 
   return (
     <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full max-w-5xl mx-auto">
-      <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-4 sm:mb-6 text-center text-blue-600 tracking-tight">
+      <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-1 text-center text-blue-600 tracking-tight">
         Precios del Dólar
       </h2>
+      <p className="text-[11px] sm:text-xs text-gray-500 text-center mb-4 sm:mb-6">
+        Compra y venta en pesos argentinos (ARS)
+      </p>
       {initialRates.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-2 p-4 sm:p-6">
           <p className="text-sm font-medium text-gray-600">

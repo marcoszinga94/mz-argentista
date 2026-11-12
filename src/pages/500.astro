@@ -1,0 +1,26 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout
+  title="Error del servidor"
+  description="Ocurrió un error inesperado. Probá de nuevo en unos minutos."
+>
+  <section
+    class="flex flex-col items-center justify-center gap-4 m-auto max-w-xl w-full text-center px-4"
+  >
+    <p class="text-6xl sm:text-7xl font-black text-blue-600 tracking-tight">500</p>
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">
+      Algo salió mal
+    </h1>
+    <p class="text-sm sm:text-base text-gray-500">
+      No pudimos completar la operación. Probá de nuevo en unos minutos.
+    </p>
+    <a
+      href="/"
+      class="mt-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+    >
+      Volver al inicio
+    </a>
+  </section>
+</Layout>

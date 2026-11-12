@@ -12,6 +12,7 @@ import {
 } from "chart.js";
 import { format, subWeeks, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
+import { formatAmount, formatInteger } from "../lib/finance";
 
 ChartJS.register(
   CategoryScale,
@@ -216,6 +217,7 @@ const chartOptions = {
         font: {
           family: "'Inter', sans-serif",
         },
+        callback: (value) => formatInteger(Number(value)),
       },
     },
     x: {
@@ -274,6 +276,12 @@ const chartOptions = {
       bodyFont: {
         family: "'Inter', sans-serif",
         size: 13,
+      },
+      callbacks: {
+        label: (context) =>
+          typeof context.parsed.y === "number"
+            ? `${context.dataset.label}: $${formatAmount(context.parsed.y)}`
+            : context.dataset.label,
       },
     },
   },

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { accumulateInflation, formatAmount, formatPercent } from "../lib/finance";
+import { accumulateInflation, formatAmount, formatPercent, parseAmount } from "../lib/finance";
 
 const months = [
   { value: "01", label: "Enero" },
@@ -58,6 +58,7 @@ const InflationCalculator = ({ initialData = [] }) => {
   const isComplete = Boolean(
     amount && startMonth && startYear && endMonth && endYear,
   );
+  const numericAmount = parseAmount(amount);
 
   const result = useMemo(() => {
     if (!isComplete) {
@@ -66,11 +67,31 @@ const InflationCalculator = ({ initialData = [] }) => {
 
     return accumulateInflation(
       initialData,
-      Number.parseFloat(amount),
+      numericAmount,
       { year: startYear, month: startMonth },
       { year: endYear, month: endMonth },
     );
-  }, [amount, isComplete, initialData, startMonth, startYear, endMonth, endYear]);
+  }, [
+    initialData,
+    isComplete,
+    numericAmount,
+    startMonth,
+    startYear,
+    endMonth,
+    endYear,
+  ]);
+
+  const validationMessage = useMemo(() => {
+    if (!isComplete || result) {
+      return null;
+    }
+
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return "Ingresá un monto mayor a cero.";
+    }
+
+    return "No hay datos de inflación para el rango seleccionado.";
+  }, [isComplete, numericAmount, result]);
 
   const inputStyles =
     "w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 text-right text-sm sm:text-lg";
@@ -112,12 +133,12 @@ const InflationCalculator = ({ initialData = [] }) => {
                   $
                 </span>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   className={`${inputStyles} pl-6 sm:pl-7`}
-                  min="0"
-                  placeholder="0.00"
+                  placeholder="0,00"
                 />
               </div>
             </div>
@@ -190,7 +211,7 @@ const InflationCalculator = ({ initialData = [] }) => {
                   value={result ? formatAmount(result.adjustedAmount) : ""}
                   readOnly
                   className={`${inputStyles} pl-6 sm:pl-7 bg-white border-blue-200 text-blue-900 font-bold`}
-                  placeholder="0.00"
+                  placeholder="0,00"
                 />
               </div>
             </div>
@@ -227,9 +248,9 @@ const InflationCalculator = ({ initialData = [] }) => {
             </div>
           </div>
 
-          {isComplete && !result && (
+          {validationMessage && (
             <p className="mt-3 sm:mt-4 text-xs sm:text-sm text-red-600 text-center font-medium">
-              No hay datos de inflación para el rango seleccionado.
+              {validationMessage}
             </p>
           )}
 

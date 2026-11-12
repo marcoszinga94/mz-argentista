@@ -1,5 +1,8 @@
 import { useMemo, useState } from "react";
 import { Line } from "react-chartjs-2";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { formatPercent } from "../lib/finance";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -37,7 +40,9 @@ const InflationGraph = ({ initialData = [] }) => {
     }
 
     return {
-      labels: filteredData.map((item) => item.fecha),
+      labels: filteredData.map((item) =>
+        format(new Date(`${item.fecha}T00:00:00`), "MMM-yy", { locale: es }),
+      ),
       datasets: [
         {
           label: "Inflación Mensual (%)",
@@ -80,7 +85,8 @@ const InflationGraph = ({ initialData = [] }) => {
           color: "#6B7280",
           font: {
             family: "'Inter', sans-serif",
-          }
+          },
+          callback: (value) => `${formatPercent(Number(value), 1)}%`,
         },
       },
       x: {
@@ -141,6 +147,10 @@ const InflationGraph = ({ initialData = [] }) => {
           family: "'Inter', sans-serif",
           size: 13,
         },
+        callbacks: {
+          label: (context) =>
+            `${context.dataset.label}: ${formatPercent(context.parsed.y, 1)}%`,
+        },
       }
     },
   };
@@ -181,10 +191,17 @@ const InflationGraph = ({ initialData = [] }) => {
       </div>
       <div className="h-72 sm:h-80 md:h-[28rem] lg:h-[32rem] relative w-full">
         {initialData.length === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <p className="text-sm font-medium text-gray-600">
               No pudimos cargar la evolución de la inflación.
             </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Reintentar
+            </button>
           </div>
         ) : (
           <>

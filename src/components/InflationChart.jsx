@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { formatPercent } from "../lib/finance";
 
 function groupDataByDecadeAndYear(data) {
   return data.reduce((acc, item) => {
@@ -65,6 +66,13 @@ const InflationChart = ({ initialData = [] }) => {
         <p className="text-sm font-medium text-gray-600">
           No pudimos cargar los índices de inflación.
         </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-3 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+        >
+          Reintentar
+        </button>
       </section>
     );
   }
@@ -114,13 +122,13 @@ const InflationChart = ({ initialData = [] }) => {
                         <span className="font-bold text-gray-800 text-sm sm:text-base">{year}</span>
                         <div className="flex items-center gap-1.5 sm:gap-3 text-xs sm:text-sm text-gray-500 flex-wrap">
                           <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-50 text-green-700 rounded text-[10px] sm:text-xs font-medium">
-                            {data.min.toFixed(1)}%
+                            {formatPercent(data.min, 1)}%
                           </span>
                           <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-red-50 text-red-700 rounded text-[10px] sm:text-xs font-medium">
-                            {data.max.toFixed(1)}%
+                            {formatPercent(data.max, 1)}%
                           </span>
                           <span className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-blue-50 text-blue-700 rounded text-[10px] sm:text-xs font-medium">
-                            {(data.total / data.count).toFixed(1)}%
+                            {formatPercent(data.total / data.count, 1)}%
                           </span>
                           {openItems[`${decade}-${year}`] ? (
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3 sm:w-4 sm:h-4">
@@ -158,7 +166,7 @@ const InflationChart = ({ initialData = [] }) => {
                                     </td>
                                     <td className="p-2 sm:p-3 font-medium text-right">
                                       <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded text-xs sm:text-sm ${value > 10 ? 'bg-red-50 text-red-700' : value > 5 ? 'bg-orange-50 text-orange-700' : 'bg-green-50 text-green-700'}`}>
-                                        {value.toFixed(1)}%
+                                        {formatPercent(value, 1)}%
                                       </span>
                                     </td>
                                   </tr>

@@ -64,9 +64,32 @@ export function formatAmount(value: number): string {
   }).format(value);
 }
 
-export function formatPercent(value: number): string {
+export function formatInteger(value: number): string {
   return new Intl.NumberFormat("es-AR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: 0,
   }).format(value);
+}
+
+export function formatPercent(value: number, digits = 2): string {
+  return new Intl.NumberFormat("es-AR", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
+}
+
+export function parseAmount(input: string): number {
+  const value = input.trim().replace(/\s/g, "");
+  if (!value) {
+    return Number.NaN;
+  }
+
+  let normalized = value;
+  if (value.includes(",")) {
+    normalized = value.replace(/\./g, "").replace(",", ".");
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(value)) {
+    normalized = value.replace(/\./g, "");
+  }
+
+  const parsed = Number.parseFloat(normalized);
+  return Number.isFinite(parsed) ? parsed : Number.NaN;
 }

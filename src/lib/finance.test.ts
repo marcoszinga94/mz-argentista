@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { accumulateInflation, formatAmount } from "./finance";
+import {
+  accumulateInflation,
+  formatAmount,
+  formatPercent,
+  parseAmount,
+} from "./finance";
 
 const records = [
   { fecha: "2024-01-31", valor: 20 },
@@ -71,5 +76,35 @@ describe("accumulateInflation", () => {
 describe("formatAmount", () => {
   it("formatea con separadores argentinos", () => {
     expect(formatAmount(1234567.891)).toBe("1.234.567,89");
+  });
+});
+
+describe("formatPercent", () => {
+  it("respeta la cantidad de decimales pedida", () => {
+    expect(formatPercent(2.4166, 1)).toBe("2,4");
+    expect(formatPercent(33.29)).toBe("33,29");
+  });
+});
+
+describe("parseAmount", () => {
+  it("interpreta decimales con coma y miles con punto", () => {
+    expect(parseAmount("1.234,56")).toBe(1234.56);
+    expect(parseAmount("1234,5")).toBe(1234.5);
+  });
+
+  it("interpreta miles sin decimales", () => {
+    expect(parseAmount("1.234")).toBe(1234);
+    expect(parseAmount("1.234.567")).toBe(1234567);
+  });
+
+  it("mantiene el punto como decimal cuando no es separador de miles", () => {
+    expect(parseAmount("1234.56")).toBe(1234.56);
+    expect(parseAmount("12.5")).toBe(12.5);
+  });
+
+  it("devuelve NaN con entradas vacías o inválidas", () => {
+    expect(parseAmount("")).toBeNaN();
+    expect(parseAmount("   ")).toBeNaN();
+    expect(parseAmount("abc")).toBeNaN();
   });
 });

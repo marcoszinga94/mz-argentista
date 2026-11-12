@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { formatAmount } from "../lib/finance";
+import { formatAmount, parseAmount } from "../lib/finance";
 
 const CurrencyConverter = ({ initialRates = [] }) => {
   const [amount, setAmount] = useState("");
@@ -21,7 +21,7 @@ const CurrencyConverter = ({ initialRates = [] }) => {
       : selectedRate.venta
     : 0;
 
-  const numericAmount = Number.parseFloat(amount);
+  const numericAmount = parseAmount(amount);
   const convertedAmount =
     Number.isFinite(numericAmount) && numericAmount > 0 && appliedRate > 0
       ? isReverse
@@ -69,11 +69,12 @@ const CurrencyConverter = ({ initialRates = [] }) => {
               $
             </span>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className={`${inputStyles} pl-7 sm:pl-8`}
-              placeholder="0.00"
+              placeholder="0,00"
             />
           </div>
         </div>

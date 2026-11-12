@@ -60,12 +60,12 @@ const CurrencyConverter = ({ initialRates = [] }: CurrencyConverterProps) => {
   }
 
   return (
-    <div className="card card-hover p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl w-full">
+    <div className="card card-hover p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl w-full flex flex-col">
       <h2 className="text-xl sm:text-2xl md:text-3xl font-black mb-6 sm:mb-8 text-center text-blue-600 tracking-tight">
         Conversor de Moneda
       </h2>
 
-      <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-1 flex-col gap-4 sm:gap-6">
         <div className="bg-gray-50/50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-100 transition-colors">
           <label htmlFor="amount" className={labelStyles}>
             {isReverse ? "Dólares (USD)" : "Pesos Argentinos (ARS)"}
@@ -139,7 +139,7 @@ const CurrencyConverter = ({ initialRates = [] }: CurrencyConverterProps) => {
           )}
         </div>
 
-        <div className="bg-blue-600 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group">
+        <div className="mt-auto bg-blue-600 p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group">
           <div className="relative z-10">
             <p className="text-blue-100 text-xs sm:text-sm font-medium mb-1 uppercase tracking-wider">
               Resultado Estimado

@@ -42,7 +42,7 @@ if (inflation.length > 0 && dollarRates.length > 0) {
     <div
       class="flex flex-col items-center justify-center gap-4 w-full"
     >
-      <div class="flex flex-col gap-4 w-full md:flex-row h-auto">
+      <div class="grid grid-cols-1 gap-4 w-full md:grid-cols-2">
         <InflationCalculator client:load initialData={inflation} />
         <CurrencyConverter client:load initialRates={dollarRates} />
       </div>

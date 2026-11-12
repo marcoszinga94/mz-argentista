@@ -118,7 +118,7 @@ const InflationCalculator = ({ initialData = [] }: InflationCalculatorProps) => 
   }
 
   return (
-    <div className="card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl w-full m-auto h-full overflow-hidden">
+    <div className="card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl w-full overflow-hidden">
       <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-4 sm:mb-6 text-center text-blue-600 tracking-tight">
         Calculadora de Inflación
       </h2>

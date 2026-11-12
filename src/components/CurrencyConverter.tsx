@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
+import type { DollarRate } from "../lib/api";
 import { formatAmount, parseAmount } from "../lib/finance";
 
-/**
- * @param {{ initialRates?: import("../lib/api").DollarRate[] }} props
- */
-const CurrencyConverter = ({ initialRates = [] }) => {
+export interface CurrencyConverterProps {
+  initialRates?: DollarRate[];
+}
+
+const CurrencyConverter = ({ initialRates = [] }: CurrencyConverterProps) => {
   const [amount, setAmount] = useState("");
   const [selectedCasa, setSelectedCasa] = useState(() => {
     const preferred = ["blue", "oficial"];
@@ -18,11 +20,12 @@ const CurrencyConverter = ({ initialRates = [] }) => {
   const selectedRate = initialRates.find(
     (rate) => rate.casa === selectedCasa,
   );
-  const appliedRate = selectedRate
-    ? isReverse
-      ? (selectedRate.compra ?? selectedRate.venta)
-      : selectedRate.venta
-    : 0;
+  const appliedRate =
+    selectedRate
+      ? ((isReverse
+          ? (selectedRate.compra ?? selectedRate.venta)
+          : selectedRate.venta) ?? 0)
+      : 0;
 
   const numericAmount = parseAmount(amount);
   const convertedAmount =
@@ -64,7 +67,7 @@ const CurrencyConverter = ({ initialRates = [] }) => {
 
       <div className="space-y-4 sm:space-y-6">
         <div className="bg-gray-50/50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-100 transition-colors">
-          <label className={labelStyles}>
+          <label htmlFor="amount" className={labelStyles}>
             {isReverse ? "Dólares (USD)" : "Pesos Argentinos (ARS)"}
           </label>
           <div className="relative">
@@ -72,10 +75,13 @@ const CurrencyConverter = ({ initialRates = [] }) => {
               $
             </span>
             <input
+              id="amount"
               type="text"
               inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setAmount(e.target.value)
+              }
               className={`${inputStyles} pl-7 sm:pl-8`}
               placeholder="0,00"
             />
@@ -109,10 +115,15 @@ const CurrencyConverter = ({ initialRates = [] }) => {
         </div>
 
         <div className="bg-gray-50/50 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-100 transition-colors">
-          <label className={labelStyles}>Tipo de Cambio</label>
+          <label htmlFor="rate" className={labelStyles}>
+            Tipo de Cambio
+          </label>
           <select
+            id="rate"
             value={selectedCasa}
-            onChange={(e) => setSelectedCasa(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+              setSelectedCasa(e.target.value)
+            }
             className={selectStyles}
           >
             {initialRates.map((type) => (

@@ -1,6 +1,8 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { Line } from "react-chartjs-2";
 import { format } from "date-fns";
+import type { ChartData, ChartOptions } from "chart.js";
+import type { InflationRecord } from "../lib/api";
 import { es } from "date-fns/locale";
 import { formatPercent } from "../lib/finance";
 import {
@@ -32,10 +34,11 @@ ChartJS.register(
   Legend,
 );
 
-/**
- * @param {{ initialData?: import("../lib/api").InflationRecord[] }} props
- */
-const InflationGraph = ({ initialData = [] }) => {
+export interface InflationGraphProps {
+  initialData?: InflationRecord[];
+}
+
+const InflationGraph = ({ initialData = [] }: InflationGraphProps) => {
   const lastDate = initialData[initialData.length - 1]?.fecha ?? "";
 
   const [startDate, setStartDate] = useState(() => {
@@ -48,7 +51,7 @@ const InflationGraph = ({ initialData = [] }) => {
   });
   const [endDate, setEndDate] = useState(lastDate);
 
-  const chartData = useMemo(() => {
+  const chartData = useMemo<ChartData<"line"> | null>(() => {
     const filteredData = initialData.filter(
       (item) => item.fecha >= startDate && item.fecha <= endDate,
     );
@@ -76,7 +79,7 @@ const InflationGraph = ({ initialData = [] }) => {
     };
   }, [endDate, initialData, startDate]);
 
-  const chartOptions = {
+  const chartOptions: ChartOptions<"line"> = {
   ...baseChartOptions,
   scales: {
     y: {
@@ -84,7 +87,8 @@ const InflationGraph = ({ initialData = [] }) => {
       grid: baseGrid,
       title: axisTitle("Inflación (%)"),
       ticks: axisTicks({
-        callback: (value) => `${formatPercent(Number(value), 1)}%`,
+        callback: (value: string | number) =>
+          `${formatPercent(Number(value), 1)}%`,
       }),
     },
     x: {
@@ -104,7 +108,7 @@ const InflationGraph = ({ initialData = [] }) => {
       ...baseTooltip,
       callbacks: {
         label: (context) =>
-          `${context.dataset.label}: ${formatPercent(context.parsed.y, 1)}%`,
+          `${context.dataset.label}: ${formatPercent(context.parsed.y ?? 0, 1)}%`,
       },
     },
   },
@@ -127,7 +131,9 @@ const inputStyles =
             type="date"
             id="startDate"
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setStartDate(e.target.value)
+            }
             className={inputStyles}
           />
         </div>
@@ -139,7 +145,9 @@ const inputStyles =
             type="date"
             id="endDate"
             value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setEndDate(e.target.value)
+            }
             className={inputStyles}
           />
         </div>

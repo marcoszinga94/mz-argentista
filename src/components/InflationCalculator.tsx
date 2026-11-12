@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
+import type { InflationRecord } from "../lib/api";
 import {
   accumulateInflation,
   formatAmount,
   formatPercent,
   parseAmount,
   shiftMonth,
+  type MonthRef,
 } from "../lib/finance";
 
 const months = [
@@ -22,12 +24,13 @@ const months = [
   { value: "12", label: "Diciembre" },
 ];
 
-/**
- * @param {{ initialData?: import("../lib/api").InflationRecord[] }} props
- */
-const InflationCalculator = ({ initialData = [] }) => {
+export interface InflationCalculatorProps {
+  initialData?: InflationRecord[];
+}
+
+const InflationCalculator = ({ initialData = [] }: InflationCalculatorProps) => {
   const latest = initialData[initialData.length - 1];
-  const defaultEnd = latest
+  const defaultEnd: MonthRef = latest
     ? { year: latest.fecha.slice(0, 4), month: latest.fecha.slice(5, 7) }
     : { year: "", month: "" };
   const defaultStart = latest
@@ -78,7 +81,7 @@ const InflationCalculator = ({ initialData = [] }) => {
     endYear,
   ]);
 
-  const validationMessage = useMemo(() => {
+  const validationMessage = useMemo<string | null>(() => {
     if (!isComplete || result) {
       return null;
     }
@@ -124,16 +127,21 @@ const InflationCalculator = ({ initialData = [] }) => {
         <div className="bg-gray-50/50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-blue-100 transition-colors">
           <div className="flex flex-col gap-3 items-start text-center">
             <div className="w-full">
-              <label className={labelStyles}>Monto Inicial</label>
+              <label htmlFor="amount" className={labelStyles}>
+                Monto Inicial
+              </label>
               <div className="relative">
                 <span className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-xs sm:text-sm">
                   $
                 </span>
                 <input
+                  id="amount"
                   type="text"
                   inputMode="decimal"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setAmount(e.target.value)
+                  }
                   className={`${inputStyles} pl-6 sm:pl-7`}
                   placeholder="0,00"
                 />
@@ -141,10 +149,15 @@ const InflationCalculator = ({ initialData = [] }) => {
             </div>
             <div className="flex flex-row w-full gap-1.5 sm:gap-3">
               <div className="flex-1">
-                <label className={labelStyles}>Mes Inicio</label>
+                <label htmlFor="startMonth" className={labelStyles}>
+                  Mes Inicio
+                </label>
                 <select
+                  id="startMonth"
                   value={startMonth}
-                  onChange={(e) => setStartMonth(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setStartMonth(e.target.value)
+                  }
                   className={selectStyles}
                 >
                   <option value="">Mes</option>
@@ -156,10 +169,15 @@ const InflationCalculator = ({ initialData = [] }) => {
                 </select>
               </div>
               <div className="flex-1">
-                <label className={labelStyles}>Año Inicio</label>
+                <label htmlFor="startYear" className={labelStyles}>
+                  Año Inicio
+                </label>
                 <select
+                  id="startYear"
                   value={startYear}
-                  onChange={(e) => setStartYear(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setStartYear(e.target.value)
+                  }
                   className={selectStyles}
                 >
                   <option value="">Año</option>
@@ -214,10 +232,15 @@ const InflationCalculator = ({ initialData = [] }) => {
             </div>
             <div className="flex flex-row w-full gap-1.5 sm:gap-3">
               <div className="flex-1">
-                <label className={labelStyles}>Mes Final</label>
+                <label htmlFor="endMonth" className={labelStyles}>
+                  Mes Final
+                </label>
                 <select
+                  id="endMonth"
                   value={endMonth}
-                  onChange={(e) => setEndMonth(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setEndMonth(e.target.value)
+                  }
                   className={selectStyles}
                 >
                   {months.map((month) => (
@@ -229,10 +252,15 @@ const InflationCalculator = ({ initialData = [] }) => {
               </div>
 
               <div className="flex-1">
-                <label className={labelStyles}>Año Final</label>
+                <label htmlFor="endYear" className={labelStyles}>
+                  Año Final
+                </label>
                 <select
+                  id="endYear"
                   value={endYear}
-                  onChange={(e) => setEndYear(e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setEndYear(e.target.value)
+                  }
                   className={selectStyles}
                 >
                   {years.map((year) => (

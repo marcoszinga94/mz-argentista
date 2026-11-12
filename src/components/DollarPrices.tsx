@@ -1,10 +1,12 @@
+import type { DollarRate } from "../lib/api";
 import { formatAmount } from "../lib/finance";
 
-/**
- * @param {{ initialRates?: import("../lib/api").DollarRate[] }} props
- */
-const DollarPrices = ({ initialRates = [] }) => {
-  const renderPriceCard = (price) => {
+export interface DollarPricesProps {
+  initialRates?: DollarRate[];
+}
+
+const DollarPrices = ({ initialRates = [] }: DollarPricesProps) => {
+  const renderPriceCard = (price: DollarRate) => {
     const isOficial = price.casa === "oficial";
 
     return (

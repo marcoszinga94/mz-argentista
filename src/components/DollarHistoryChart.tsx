@@ -1,5 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 import { Line } from "react-chartjs-2";
+import type { ChartData, ChartOptions } from "chart.js";
+import type { DollarSeries } from "../lib/api";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -32,6 +40,8 @@ ChartJS.register(
   Legend,
 );
 
+type TimeRange = number | "all";
+
 const CASAS = [
   "oficial",
   "blue",
@@ -42,7 +52,7 @@ const CASAS = [
   "tarjeta",
 ];
 
-const CASA_LABELS = {
+const CASA_LABELS: Record<string, string> = {
   oficial: "Oficial",
   blue: "Blue",
   bolsa: "Bolsa",
@@ -62,7 +72,7 @@ const CASA_COLORS = [
   "rgba(16, 185, 129, 1)",
 ];
 
-const MAX_POINTS = {
+const MAX_POINTS: Record<string, number> = {
   "0.25": 14,
   1: 31,
   3: 92,
@@ -71,9 +81,9 @@ const MAX_POINTS = {
   all: 1000,
 };
 
-const rangeCache = new Map();
+const rangeCache = new Map<string, DollarSeries>();
 
-function rangeStart(range) {
+function rangeStart(range: TimeRange): Date | null {
   const end = new Date();
   if (range === "all") {
     return null;
@@ -84,7 +94,7 @@ function rangeStart(range) {
   return subWeeks(end, Math.max(1, Math.round(range * 4)));
 }
 
-function getPointConfig(range) {
+function getPointConfig(range: TimeRange) {
   if (range === "all") return { radius: 0, hitRadius: 10 };
   if (range >= 12) return { radius: 1, hitRadius: 10 };
   if (range >= 6) return { radius: 2, hitRadius: 8 };
@@ -93,7 +103,7 @@ function getPointConfig(range) {
   return { radius: 5, hitRadius: 6 };
 }
 
-function getTicksConfig(range) {
+function getTicksConfig(range: TimeRange) {
   if (range === "all") return { maxTicksLimit: 12 };
   if (range >= 12) return { maxTicksLimit: 12 };
   if (range >= 6) return { maxTicksLimit: 12 };
@@ -102,7 +112,7 @@ function getTicksConfig(range) {
   return { maxTicksLimit: 7 };
 }
 
-function formatLabel(date, range) {
+function formatLabel(date: string, range: TimeRange) {
   const parsed = new Date(`${date}T00:00:00`);
   if (range === "all") {
     return format(parsed, "MMM-yyyy", { locale: es });
@@ -113,8 +123,11 @@ function formatLabel(date, range) {
   return format(parsed, "d-M-yy", { locale: es });
 }
 
-function prepareChartData(series, range) {
-  const dateSet = new Set();
+function prepareChartData(
+  series: DollarSeries,
+  range: TimeRange,
+): ChartData<"line"> {
+  const dateSet = new Set<string>();
   CASAS.forEach((casa) => {
     (series[casa] ?? []).forEach((point) => dateSet.add(point.date));
   });
@@ -133,7 +146,7 @@ function prepareChartData(series, range) {
   const pointConfig = getPointConfig(range);
 
   const datasets = CASAS.map((casa, index) => {
-    let lastValue = null;
+    let lastValue: number | null = null;
     const data = dates.map((date) => {
       const value = maps[index].get(date);
       if (typeof value === "number") {
@@ -164,13 +177,16 @@ function prepareChartData(series, range) {
   };
 }
 
-async function fetchSeries(range) {
+async function fetchSeries(range: TimeRange): Promise<DollarSeries> {
   const start = rangeStart(range);
   const since = start ? start.toISOString().slice(0, 10) : "";
   const cacheKey = since || "all";
 
   if (rangeCache.has(cacheKey)) {
-    return rangeCache.get(cacheKey);
+    const cached = rangeCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
   }
 
   const params = new URLSearchParams();
@@ -183,7 +199,7 @@ async function fetchSeries(range) {
     throw new Error("No se pudo cargar el histórico del dólar");
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as DollarSeries;
   rangeCache.set(cacheKey, data);
   return data;
 }
@@ -197,7 +213,7 @@ const timeRangeOptions = [
   { value: "all", label: "Todo el historial" },
 ];
 
-const chartOptions = {
+const chartOptions: ChartOptions<"line"> = {
   ...baseChartOptions,
   scales: {
     y: {
@@ -205,7 +221,8 @@ const chartOptions = {
       grid: baseGrid,
       title: axisTitle("Precio en ARS"),
       ticks: axisTicks({
-        callback: (value) => formatInteger(Number(value)),
+        callback: (value: string | number) =>
+          formatInteger(Number(value)),
       }),
     },
     x: {
@@ -235,17 +252,19 @@ const chartOptions = {
 const selectStyles =
   "w-full sm:w-auto p-2 sm:p-2.5 pr-8 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
 
-/**
- * @param {{
- *   initialSeries?: import("../lib/api").DollarSeries | null,
- *   initialRange?: number | "all"
- * }} props
- */
-const DollarHistoryChart = ({ initialSeries = null, initialRange = 0.25 }) => {
-  const [timeRange, setTimeRange] = useState(initialRange);
-  const [series, setSeries] = useState(initialSeries);
+export interface DollarHistoryChartProps {
+  initialSeries?: DollarSeries | null;
+  initialRange?: TimeRange;
+}
+
+const DollarHistoryChart = ({
+  initialSeries = null,
+  initialRange = 0.25,
+}: DollarHistoryChartProps) => {
+  const [timeRange, setTimeRange] = useState<TimeRange>(initialRange);
+  const [series, setSeries] = useState<DollarSeries | null>(initialSeries);
   const [isLoading, setIsLoading] = useState(!initialSeries);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
   const firstRun = useRef(true);
 
@@ -272,7 +291,7 @@ const DollarHistoryChart = ({ initialSeries = null, initialRange = 0.25 }) => {
         if (active) {
           setSeries(data);
         }
-      } catch (loadError) {
+      } catch {
         if (active) {
           setError("No pudimos cargar el histórico del dólar.");
         }
@@ -291,18 +310,18 @@ const DollarHistoryChart = ({ initialSeries = null, initialRange = 0.25 }) => {
   }, [attempt, timeRange]);
 
   const hasData = chartData.datasets.some((dataset) =>
-    dataset.data.some((value) => value !== null),
+    dataset.data.some((value: unknown) => value !== null),
   );
 
-  const options = useMemo(
+  const options = useMemo<ChartOptions<"line">>(
     () => ({
       ...chartOptions,
       scales: {
-        ...chartOptions.scales,
+        ...(chartOptions.scales ?? {}),
         x: {
-          ...chartOptions.scales.x,
+          ...(chartOptions.scales?.x ?? {}),
           ticks: {
-            ...chartOptions.scales.x.ticks,
+            ...(chartOptions.scales?.x?.ticks ?? {}),
             ...getTicksConfig(timeRange),
           },
         },
@@ -328,7 +347,7 @@ const DollarHistoryChart = ({ initialSeries = null, initialRange = 0.25 }) => {
           <select
             id="time-range-select"
             value={timeRange}
-            onChange={(e) =>
+            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
               setTimeRange(
                 e.target.value === "all"
                   ? "all"

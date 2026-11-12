@@ -1,65 +1,85 @@
 import { useMemo, useState } from "react";
+import type { InflationRecord } from "../lib/api";
 import { formatPercent } from "../lib/finance";
 
-function groupDataByDecadeAndYear(data) {
-  return data.reduce((acc, item) => {
-    const [year, month] = item.fecha.split("-");
-    const decade = `${Math.floor(year / 10) * 10}s`;
+interface YearStats {
+  months: Record<string, number>;
+  min: number;
+  max: number;
+  total: number;
+  count: number;
+}
 
-    if (!acc[decade]) {
-      acc[decade] = {};
-    }
-    if (!acc[decade][year]) {
-      acc[decade][year] = {
-        months: {},
-        min: Number.POSITIVE_INFINITY,
-        max: Number.NEGATIVE_INFINITY,
-        total: 0,
-        count: 0,
-      };
-    }
-    acc[decade][year].months[month] = item.valor;
-    acc[decade][year].min = Math.min(acc[decade][year].min, item.valor);
-    acc[decade][year].max = Math.max(acc[decade][year].max, item.valor);
-    acc[decade][year].total += item.valor;
-    acc[decade][year].count += 1;
+type GroupedInflation = Record<string, Record<string, YearStats>>;
+
+export interface InflationChartProps {
+  initialData?: InflationRecord[];
+}
+
+function groupDataByDecadeAndYear(data: InflationRecord[]): GroupedInflation {
+  return data.reduce<GroupedInflation>((acc, item) => {
+    const [year, month] = item.fecha.split("-");
+    const decade = `${Math.floor(Number(year) / 10) * 10}s`;
+
+    acc[decade] ??= {};
+    acc[decade][year] ??= {
+      months: {},
+      min: Number.POSITIVE_INFINITY,
+      max: Number.NEGATIVE_INFINITY,
+      total: 0,
+      count: 0,
+    };
+
+    const stats = acc[decade][year];
+    stats.months[month] = item.valor;
+    stats.min = Math.min(stats.min, item.valor);
+    stats.max = Math.max(stats.max, item.valor);
+    stats.total += item.valor;
+    stats.count += 1;
     return acc;
   }, {});
 }
 
-function getInitialOpenItems(groupedData) {
+function getInitialOpenItems(
+  groupedData: GroupedInflation,
+): Record<string, boolean> {
   const decades = Object.keys(groupedData);
   if (decades.length === 0) {
     return {};
   }
 
   const lastDecade = decades.sort().pop();
+  if (!lastDecade) {
+    return {};
+  }
+
   const years = Object.keys(groupedData[lastDecade]);
+  const lastYear = years.sort().pop();
+  if (!lastYear) {
+    return { [lastDecade]: true };
+  }
 
   return {
     [lastDecade]: true,
-    [`${lastDecade}-${years.sort().pop()}`]: true,
+    [`${lastDecade}-${lastYear}`]: true,
   };
 }
 
-const formatDate = (year, month) => {
-  const date = new Date(year, Number.parseInt(month) - 1);
+const formatDate = (year: string, month: string) => {
+  const date = new Date(Number(year), Number.parseInt(month) - 1);
   return date.toLocaleString("es-AR", { month: "long", year: "numeric" });
 };
 
-/**
- * @param {{ initialData?: import("../lib/api").InflationRecord[] }} props
- */
-const InflationChart = ({ initialData = [] }) => {
+const InflationChart = ({ initialData = [] }: InflationChartProps) => {
   const inflationData = useMemo(
     () => groupDataByDecadeAndYear(initialData),
     [initialData],
   );
-  const [openItems, setOpenItems] = useState(() =>
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>(() =>
     getInitialOpenItems(inflationData),
   );
 
-  const toggleItem = (itemKey) => {
+  const toggleItem = (itemKey: string) => {
     setOpenItems((prev) => ({ ...prev, [itemKey]: !prev[itemKey] }));
   };
 

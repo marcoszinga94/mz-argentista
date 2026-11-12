@@ -1,0 +1,95 @@
+---
+import type { DollarRate, InflationRecord } from "../lib/api";
+import {
+  accumulateInflation,
+  formatAmount,
+  formatPercent,
+  shiftMonth,
+} from "../lib/finance";
+
+export interface Props {
+  inflation: InflationRecord[];
+  rates: DollarRate[];
+}
+
+const { inflation, rates } = Astro.props;
+
+const latest = inflation[inflation.length - 1];
+const lastMonth = latest
+  ? { year: latest.fecha.slice(0, 4), month: latest.fecha.slice(5, 7) }
+  : null;
+const yearly = lastMonth
+  ? accumulateInflation(inflation, 100, shiftMonth(lastMonth, -11), lastMonth)
+  : null;
+
+const oficial = rates.find((rate) => rate.casa === "oficial") ?? null;
+const blue = rates.find((rate) => rate.casa === "blue") ?? null;
+const spread =
+  oficial?.venta && blue?.venta
+    ? (blue.venta / oficial.venta - 1) * 100
+    : null;
+
+const monthLabel = lastMonth
+  ? new Date(
+      `${lastMonth.year}-${lastMonth.month}-01T00:00:00`,
+    ).toLocaleDateString("es-AR", { month: "long", year: "numeric" })
+  : null;
+const monthCaption = monthLabel
+  ? monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)
+  : null;
+
+const updatedAt = (rate: DollarRate | null) =>
+  rate?.fechaActualizacion
+    ? new Date(rate.fechaActualizacion).toLocaleTimeString("es-AR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : null;
+
+const cards = [
+  {
+    label: "Inflación mensual",
+    value: latest ? `${formatPercent(latest.valor, 1)}%` : "—",
+    caption: monthCaption ? `Último dato · ${monthCaption}` : "Sin datos",
+  },
+  {
+    label: "Inflación interanual",
+    value: yearly ? `${formatPercent(yearly.totalInflation, 1)}%` : "—",
+    caption: "Acumulada en 12 meses",
+  },
+  {
+    label: "Dólar oficial",
+    value: oficial?.venta ? `$${formatAmount(oficial.venta)}` : "—",
+    caption: updatedAt(oficial)
+      ? `Venta · ${updatedAt(oficial)}`
+      : "Sin datos",
+  },
+  {
+    label: "Dólar blue",
+    value: blue?.venta ? `$${formatAmount(blue.venta)}` : "—",
+    caption:
+      spread === null
+        ? "Sin datos"
+        : `Brecha ${formatPercent(spread, 1)}% vs oficial`,
+  },
+];
+---
+
+<section
+  class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full"
+  aria-label="Resumen económico"
+>
+  {
+    cards.map((card) => (
+      <div class="card rounded-xl sm:rounded-2xl p-3 sm:p-4">
+        <p class="field-label">{card.label}</p>
+        <p class="mt-1 sm:mt-1.5 text-xl sm:text-2xl font-black text-blue-600 tracking-tight">
+          {card.value}
+        </p>
+        <p class="mt-0.5 text-[10px] sm:text-xs text-gray-400">
+          {card.caption}
+        </p>
+      </div>
+    ))
+  }
+</section>

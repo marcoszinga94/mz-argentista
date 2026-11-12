@@ -13,6 +13,14 @@ import {
 import { format, subWeeks, subMonths } from "date-fns";
 import { es } from "date-fns/locale";
 import { formatAmount, formatInteger } from "../lib/finance";
+import {
+  axisTicks,
+  axisTitle,
+  baseChartOptions,
+  baseGrid,
+  baseLegend,
+  baseTooltip,
+} from "../lib/chartTheme";
 
 ChartJS.register(
   CategoryScale,
@@ -190,93 +198,30 @@ const timeRangeOptions = [
 ];
 
 const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  interaction: {
-    mode: "index",
-    intersect: false,
-  },
+  ...baseChartOptions,
   scales: {
     y: {
       beginAtZero: false,
-      grid: {
-        color: "rgba(0, 0, 0, 0.05)",
-      },
-      title: {
-        display: true,
-        text: "Precio en ARS",
-        color: "#6B7280",
-        font: {
-          family: "'Inter', sans-serif",
-          size: 12,
-          weight: "500",
-        },
-      },
-      ticks: {
-        color: "#6B7280",
-        font: {
-          family: "'Inter', sans-serif",
-        },
+      grid: baseGrid,
+      title: axisTitle("Precio en ARS"),
+      ticks: axisTicks({
         callback: (value) => formatInteger(Number(value)),
-      },
+      }),
     },
     x: {
-      grid: {
-        display: false,
-      },
-      title: {
-        display: true,
-        text: "Fecha",
-        color: "#6B7280",
-        font: {
-          family: "'Inter', sans-serif",
-          size: 12,
-          weight: "500",
-        },
-      },
-      ticks: {
-        color: "#6B7280",
-        font: {
-          family: "'Inter', sans-serif",
-        },
+      grid: { display: false },
+      title: axisTitle("Fecha"),
+      ticks: axisTicks({
         autoSkip: true,
         maxRotation: 45,
         minRotation: 45,
-      },
+      }),
     },
   },
   plugins: {
-    legend: {
-      position: "bottom",
-      labels: {
-        usePointStyle: true,
-        padding: 20,
-        color: "#374151",
-        font: {
-          family: "'Inter', sans-serif",
-          size: 12,
-          weight: "500",
-        },
-      },
-    },
+    legend: baseLegend,
     tooltip: {
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
-      titleColor: "#111827",
-      bodyColor: "#374151",
-      borderColor: "#E5E7EB",
-      borderWidth: 1,
-      padding: 12,
-      boxPadding: 6,
-      usePointStyle: true,
-      titleFont: {
-        family: "'Inter', sans-serif",
-        size: 14,
-        weight: "bold",
-      },
-      bodyFont: {
-        family: "'Inter', sans-serif",
-        size: 13,
-      },
+      ...baseTooltip,
       callbacks: {
         label: (context) =>
           typeof context.parsed.y === "number"
@@ -361,7 +306,7 @@ const DollarHistoryChart = ({ initialSeries = null, initialRange = 0.25 }) => {
   );
 
   return (
-    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full max-w-5xl mx-auto transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+    <div className="card card-hover p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl w-full max-w-5xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h2 className="text-lg sm:text-xl md:text-2xl font-black text-blue-600 tracking-tight">
           Histórico del Dólar

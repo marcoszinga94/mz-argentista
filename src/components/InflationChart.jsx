@@ -62,7 +62,7 @@ const InflationChart = ({ initialData = [] }) => {
 
   if (initialData.length === 0) {
     return (
-      <section className="bg-white p-4 sm:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full flex-1 text-center">
+      <section className="card p-4 sm:p-6 rounded-xl sm:rounded-2xl w-full flex-1 text-center">
         <p className="text-sm font-medium text-gray-600">
           No pudimos cargar los índices de inflación.
         </p>
@@ -78,7 +78,7 @@ const InflationChart = ({ initialData = [] }) => {
   }
 
   return (
-    <section className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full mb-0 flex-1 overflow-hidden">
+    <section className="card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl w-full mb-0 flex-1 overflow-hidden">
       <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-4 sm:mb-6 text-center text-blue-600 tracking-tight">
         Índices de Inflación
       </h2>

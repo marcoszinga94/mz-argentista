@@ -13,8 +13,20 @@ export interface InflationResult {
   months: number;
 }
 
-function monthKey({ year, month }: MonthRef): string {
+export function monthKey({ year, month }: MonthRef): string {
   return `${year}-${month}`;
+}
+
+export function monthFromDate(date: Date): string {
+  return String(date.getUTCMonth() + 1).padStart(2, "0");
+}
+
+export function shiftMonth({ year, month }: MonthRef, offset: number): MonthRef {
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1 + offset, 1));
+  return {
+    year: date.getUTCFullYear().toString(),
+    month: monthFromDate(date),
+  };
 }
 
 export function accumulateInflation(

@@ -38,7 +38,7 @@ const CurrencyConverter = ({ initialRates = [] }) => {
 
   if (initialRates.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-2xl sm:rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full text-center">
+      <div className="card p-6 rounded-2xl sm:rounded-3xl w-full text-center">
         <p className="text-sm font-medium text-gray-600">
           No pudimos cargar las cotizaciones del dólar.
         </p>
@@ -54,7 +54,7 @@ const CurrencyConverter = ({ initialRates = [] }) => {
   }
 
   return (
-    <div className="bg-white p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full transition-all hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
+    <div className="card card-hover p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl w-full">
       <h2 className="text-xl sm:text-2xl md:text-3xl font-black mb-6 sm:mb-8 text-center text-blue-600 tracking-tight">
         Conversor de Moneda
       </h2>

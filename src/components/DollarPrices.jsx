@@ -7,7 +7,7 @@ const DollarPrices = ({ initialRates = [] }) => {
     return (
       <div
         key={price.casa}
-        className={`group p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl border shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 ${
+        className={`group p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl border shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300 ${
           isOficial ? "col-span-2 sm:col-span-2 lg:col-span-3 border-blue-200 bg-gradient-to-br from-blue-50 to-white" : "border-gray-100"
         }`}
       >
@@ -43,7 +43,7 @@ const DollarPrices = ({ initialRates = [] }) => {
   };
 
   return (
-    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full max-w-5xl mx-auto">
+    <div className="card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl w-full max-w-5xl mx-auto">
       <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-1 text-center text-blue-600 tracking-tight">
         Precios del Dólar
       </h2>

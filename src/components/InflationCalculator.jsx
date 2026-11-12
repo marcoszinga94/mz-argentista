@@ -1,5 +1,11 @@
 import { useMemo, useState } from "react";
-import { accumulateInflation, formatAmount, formatPercent, parseAmount } from "../lib/finance";
+import {
+  accumulateInflation,
+  formatAmount,
+  formatPercent,
+  parseAmount,
+  shiftMonth,
+} from "../lib/finance";
 
 const months = [
   { value: "01", label: "Enero" },
@@ -16,25 +22,13 @@ const months = [
   { value: "12", label: "Diciembre" },
 ];
 
-function monthFromDate(date) {
-  return String(date.getUTCMonth() + 1).padStart(2, "0");
-}
-
-function shiftMonths(year, month, offset) {
-  const date = new Date(Date.UTC(Number(year), Number(month) - 1 + offset, 1));
-  return {
-    year: date.getUTCFullYear().toString(),
-    month: monthFromDate(date),
-  };
-}
-
 const InflationCalculator = ({ initialData = [] }) => {
   const latest = initialData[initialData.length - 1];
   const defaultEnd = latest
     ? { year: latest.fecha.slice(0, 4), month: latest.fecha.slice(5, 7) }
     : { year: "", month: "" };
   const defaultStart = latest
-    ? shiftMonths(defaultEnd.year, defaultEnd.month, -11)
+    ? shiftMonth(defaultEnd, -11)
     : { year: "", month: "" };
 
   const [amount, setAmount] = useState("1000");
@@ -102,7 +96,7 @@ const InflationCalculator = ({ initialData = [] }) => {
 
   if (initialData.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full text-center">
+      <div className="card p-6 rounded-xl sm:rounded-2xl w-full text-center">
         <p className="text-sm font-medium text-gray-600">
           No pudimos cargar los datos de inflación.
         </p>
@@ -118,7 +112,7 @@ const InflationCalculator = ({ initialData = [] }) => {
   }
 
   return (
-    <div className="bg-white p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 w-full m-auto h-full overflow-hidden">
+    <div className="card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl w-full m-auto h-full overflow-hidden">
       <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-4 sm:mb-6 text-center text-blue-600 tracking-tight">
         Calculadora de Inflación
       </h2>

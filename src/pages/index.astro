@@ -2,6 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import InflationCalculator from "../components/InflationCalculator";
 import CurrencyConverter from "../components/CurrencyConverter";
+import SummaryCards from "../components/SummaryCards.astro";
 import { getDollarRates, getInflation } from "../lib/api";
 
 const [inflation, dollarRates] = await Promise.all([
@@ -24,6 +25,12 @@ if (inflation.length > 0 && dollarRates.length > 0) {
     <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-center text-blue-600 tracking-tight">
       ARGENTISTA
     </h1>
+
+    <p class="text-center text-gray-500 text-sm sm:text-base max-w-2xl px-2">
+      Inflación y dólar en Argentina, con datos actualizados.
+    </p>
+
+    <SummaryCards inflation={inflation} rates={dollarRates} />
 
     <div
       class="flex flex-col items-center justify-center gap-4 w-full"

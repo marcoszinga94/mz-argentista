@@ -44,7 +44,7 @@ const CurrencyConverter = ({ initialRates = [] }: CurrencyConverterProps) => {
 
   if (initialRates.length === 0) {
     return (
-      <div className="card p-6 rounded-2xl sm:rounded-3xl w-full text-center">
+      <div className="card card-hover p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl w-full text-center">
         <p className="text-sm font-medium text-gray-600">
           No pudimos cargar las cotizaciones del dólar.
         </p>

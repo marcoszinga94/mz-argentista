@@ -94,15 +94,15 @@ const InflationCalculator = ({ initialData = [] }: InflationCalculatorProps) => 
   }, [isComplete, numericAmount, result]);
 
   const inputStyles =
-    "w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 text-right text-sm sm:text-lg";
+    "w-full p-2 sm:p-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 text-right text-sm sm:text-lg";
   const selectStyles =
-    "w-full p-2 sm:p-3 rounded-lg sm:rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
+    "w-full p-2 sm:p-3 rounded-xl border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-500 focus:ring-2 sm:focus:ring-4 focus:ring-blue-500/10 outline-none transition-all duration-200 font-medium text-gray-700 cursor-pointer hover:bg-gray-100 text-xs sm:text-base";
   const labelStyles =
     "text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2 block";
 
   if (initialData.length === 0) {
     return (
-      <div className="card p-6 rounded-xl sm:rounded-2xl w-full text-center">
+      <div className="card card-hover p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl w-full text-center">
         <p className="text-sm font-medium text-gray-600">
           No pudimos cargar los datos de inflación.
         </p>
@@ -118,13 +118,13 @@ const InflationCalculator = ({ initialData = [] }: InflationCalculatorProps) => 
   }
 
   return (
-    <div className="card p-3 sm:p-4 md:p-6 rounded-xl sm:rounded-2xl w-full overflow-hidden">
+    <div className="card card-hover p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl w-full">
       <h2 className="text-lg sm:text-xl md:text-2xl font-black mb-4 sm:mb-6 text-center text-blue-600 tracking-tight">
         Calculadora de Inflación
       </h2>
 
       <div className="flex flex-col gap-4 sm:gap-6">
-        <div className="bg-gray-50/50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-gray-100 hover:border-blue-100 transition-colors">
+        <div className="bg-gray-50/50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-gray-100 hover:border-blue-100 transition-colors">
           <div className="flex flex-col gap-3 items-start text-center">
             <div className="w-full">
               <label htmlFor="amount" className={labelStyles}>
@@ -211,7 +211,7 @@ const InflationCalculator = ({ initialData = [] }: InflationCalculatorProps) => 
           </div>
         </div>
 
-        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg sm:rounded-xl border border-blue-100">
+        <div className="bg-blue-50 p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-blue-100">
           <div className="flex flex-col gap-3 items-start text-center">
             <div className="w-full">
               <label className="text-[10px] sm:text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1 sm:mb-2 block">

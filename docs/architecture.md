@@ -58,6 +58,9 @@ solo para las partes interactivas, como islas hidratadas con los datos ya resuel
 - **Cálculos puros en `lib/finance.ts`:** se testean sin DOM ni red.
 - **Service worker mínimo:** solo cachea iconos e imágenes; nunca HTML, para que un
   deploy nuevo se vea al instante.
+- **Headers de seguridad:** `src/middleware.ts` aplica CSP, `X-Content-Type-Options`,
+  `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`
+  a todas las respuestas del servidor, incluidas las rutas de API.
 
 ## Extensibilidad
 

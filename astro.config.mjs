@@ -14,5 +14,5 @@ export default defineConfig({
     // @ts-ignore
     plugins: [tailwindcss()],
   },
-  prefetch: false,
+  prefetch: true,
 });

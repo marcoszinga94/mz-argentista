@@ -28,6 +28,7 @@ if (dollarRates.length > 0 && hasSeries) {
   <section
     class="flex flex-col items-center justify-center gap-4 sm:gap-6 m-auto max-w-5xl w-full px-3 sm:px-4"
   >
+    <h1 class="sr-only">Dólar en Argentina</h1>
     <DollarPrices client:load initialRates={dollarRates} />
     <DollarHistoryChart client:load initialSeries={dollarSeries} />
   </section>

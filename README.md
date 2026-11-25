@@ -19,7 +19,7 @@
 - **Datos en el servidor:** las páginas consultan las APIs durante el render, con caché en memoria y en el CDN; las islas reciben los datos ya resueltos.
 - **Navegación por secciones:** inicio con resumen, calculadora y conversor; `/dolar` y `/inflacion`.
 - **PWA:** manifiesto, iconos y service worker que cachea solo los assets estáticos.
-- **SEO:** sitemap, `robots.txt`, canonical, Open Graph y datos estructurados.
+- **SEO:** sitemap con `lastmod`, `robots.txt`, canonical, Open Graph, datos estructurados y `security.txt`.
 - **Responsive:** layout adaptable con Tailwind CSS.
 
 ## Stack

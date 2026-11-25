@@ -6,13 +6,15 @@ const pages = [
   { path: "/inflacion", priority: "0.9", changefreq: "monthly" },
 ];
 
+const buildTime = new Date().toISOString();
+
 export const GET: APIRoute = ({ site }) => {
   const base = site ?? new URL("https://argentista.vercel.app");
 
   const urls = pages
     .map(
       (page) =>
-        `  <url>\n    <loc>${new URL(page.path, base).href}</loc>\n    <changefreq>${page.changefreq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>`,
+        `  <url>\n    <loc>${new URL(page.path, base).href}</loc>\n    <lastmod>${buildTime}</lastmod>\n    <changefreq>${page.changefreq}</changefreq>\n    <priority>${page.priority}</priority>\n  </url>`,
     )
     .join("\n");
 

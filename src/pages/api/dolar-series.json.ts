@@ -11,7 +11,10 @@ export const GET: APIRoute = async ({ url }) => {
   if (casas.length === 0) {
     return new Response(JSON.stringify({ error: "Invalid casas" }), {
       status: 400,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Robots-Tag": "noindex",
+      },
     });
   }
 
@@ -22,7 +25,10 @@ export const GET: APIRoute = async ({ url }) => {
   if (entries.every(([, points]) => points.length === 0)) {
     return new Response(JSON.stringify({ error: "Upstream unavailable" }), {
       status: 502,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "X-Robots-Tag": "noindex",
+      },
     });
   }
 
@@ -36,6 +42,7 @@ export const GET: APIRoute = async ({ url }) => {
   return new Response(JSON.stringify(data), {
     headers: {
       "Content-Type": "application/json",
+      "X-Robots-Tag": "noindex",
       "Cache-Control": "public, s-maxage=300, stale-while-revalidate=900",
     },
   });

@@ -10,8 +10,8 @@ export interface Props {
   title: string;
   description?: string;
   keywords?: string;
-  url?: string;
   image?: string;
+  noindex?: boolean;
 }
 
 const {
@@ -19,6 +19,7 @@ const {
   description = "ARGENTISTA es una aplicación que te permite conocer la economía de Argentina, con datos en tiempo real sobre la inflación y otros indicadores económicos.",
   keywords = "inflación argentina, economía argentina, calculadora de inflación, estadísticas económicas",
   image = "/og_image.jpg",
+  noindex = false,
 } = Astro.props;
 
 const site = Astro.site ?? new URL("https://argentista.vercel.app");
@@ -29,7 +30,7 @@ const socialImage = new URL(image, site).href;
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es-AR">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
@@ -48,7 +49,8 @@ const socialImage = new URL(image, site).href;
     <!-- Meta para el SEO -->
     <meta name="description" content={description} />
     <meta name="keywords" content={keywords} />
-    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Marcos Zingaretti" />
+    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow"} />
 
     <!-- Meta para redes sociales -->
     <meta property="og:site_name" content="ARGENTISTA" />
@@ -67,6 +69,10 @@ const socialImage = new URL(image, site).href;
     <meta name="twitter:title" content={pageTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImage} />
+    <meta
+      name="twitter:image:alt"
+      content="ARGENTISTA: inflación y dólar en Argentina"
+    />
 
     <!-- Código de GoogleAdSense -->
     <script
@@ -97,6 +103,12 @@ const socialImage = new URL(image, site).href;
         operatingSystem: "Web",
         inLanguage: "es-AR",
         isAccessibleForFree: true,
+        author: {
+          "@type": "Person",
+          name: "Marcos Zingaretti",
+          url: "https://marcoszinga.vercel.app/",
+          sameAs: ["https://github.com/marcoszinga94"],
+        },
         offers: {
           "@type": "Offer",
           price: "0",
